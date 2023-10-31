@@ -2,9 +2,9 @@ from DataBase import SQLdb
 import pandas as pd
 
 
-execute = SQLdb
+execute = SQLdb()
 
-execute.create_table('inulinases.db')
+execute.create_table()
 def read_csv(file):
 
     list_string = []
@@ -28,6 +28,6 @@ def read_csv(file):
 
     return list_string
 
-read_csv('inulinases.csv')
+list_inulinases = read_csv('inulinases.csv')
 
-execute.insert_dataset()
+execute.insert_dataset(list_inulinases)
