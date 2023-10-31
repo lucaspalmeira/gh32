@@ -54,6 +54,11 @@ class SQLdb:
         self.cursor.execute("DELETE FROM inulinases WHERE id=?", (entry_id,))
         self.connection.commit()
 
+    def consult_select(self):
+        result = self.cursor.execute("SELECT * FROM inulinases")
+        for row in result:
+            print(row)
+
     def close_connection(self):
         self.connection.close()
 
