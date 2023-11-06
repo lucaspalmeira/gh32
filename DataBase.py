@@ -59,16 +59,22 @@ class SQLdb:
         for row in result:
             print(row)
 
+    def select_all_by_column_index(self, column_index):
+        query = f"SELECT * FROM inulinases"
+        self.cursor.execute(query)
+        values = [row[column_index] for row in self.cursor.fetchall()]
+
+        return values
+
     def close_connection(self):
         self.connection.close()
 
-"""
+
 if __name__ == "__main__":
     db = SQLdb()
     db.create_table()
-    # You need to provide data to insert_data and insert_dataset.
-    # Example:
+    # Você precisa fornecer dados para insert_data e insert_dataset.
+    # Exemplo:
     # db.insert_data("value1", "value2", "value3", "value4", "value5", "value6", "value7", "value8", "value9", "value10", "value11")
     # db.insert_dataset(["value1,value2,value3,value4,value5,value6,value7,value8,value9,value10,value11"])
     db.close_connection()
-"""
