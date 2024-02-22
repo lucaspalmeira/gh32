@@ -1,82 +1,15 @@
-import sqlite3
 import pymongo
-
-class SQLdb:
-    def __init__(self):
-        self.connection = sqlite3.connect('inulinases.db')
-        self.cursor = self.connection.cursor()
-
-    def create_table(self):
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS inulinases (
-                id INTEGER PRIMARY KEY,
-                Entry TEXT NOT NULL,
-                Entry_Name TEXT NOT NULL,
-                Protein_Names TEXT NOT NULL,
-                Gene_Names TEXT,  -- Specify the data type for 'Gene Names'
-                Organism TEXT NOT NULL,
-                Length TEXT NOT NULL,
-                EC_Number TEXT,  -- Allow null values for 'EC_Number'
-                PubMed_ID TEXT,  -- Allow null values for 'PubMed_ID'
-                PDB TEXT,
-                AlphaFoldDB TEXT,
-                Pfam TEXT
-            )
-        ''')
-        self.connection.commit()
-
-    def insert_data(self, entry, entry_name, Protein_Names,
-                    Gene_Names, Organism, Length, EC_Number,
-                    PubMed_ID, PDB, AlphaFoldDB, Pfam):
-        self.cursor.execute("INSERT INTO inulinases "
-                            "(Entry, Entry_Name, Protein_Names, Gene_Names,"
-                            "Organism, Length, EC_Number, PubMed_ID, PDB,"
-                            "AlphaFoldDB, Pfam) VALUES ("
-                            "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
-                            ")",
-                            (entry, entry_name, Protein_Names,
-                             Gene_Names, Organism, Length, EC_Number,
-                             PubMed_ID, PDB, AlphaFoldDB, Pfam))
-        self.connection.commit()
-
-    def insert_dataset(self, list_strings):
-        for _str in list_strings:
-            _data = _str.split(',')
-            if len(_data) == 11:
-                (entry, entry_name, Protein_Names, Gene_Names, Organism,
-                 Length, EC_Number, PubMed_ID, PDB, AlphaFoldDB, Pfam) = _data
-                self.insert_data(entry.strip(), entry_name.strip(),
-                                 Protein_Names.strip(), Gene_Names.strip(),
-                                 Organism.strip(), Length.strip(),
-                                 EC_Number.strip(), PubMed_ID.strip(),
-                                 PDB.strip(), AlphaFoldDB.strip(), Pfam.strip())
-
-    def remove_entry(self, entry_id):
-        self.cursor.execute("DELETE FROM inulinases WHERE id=?", (entry_id,))
-        self.connection.commit()
-
-    def consult_select(self):
-        result = self.cursor.execute("SELECT * FROM inulinases")
-        for row in result:
-            print(row)
-
-    def select_all_by_column_index(self, column_index):
-        query = f"SELECT * FROM inulinases"
-        self.cursor.execute(query)
-        values = [row[column_index] for row in self.cursor.fetchall()]
-
-        return values
-
-    def close_connection(self):
-        self.connection.close()
 
 
 class ProteinEntry:
-    def __init__(self, entry, entry_name, protein_names, gene_names,
-                 organism, length, ec_number, pubmed_id, pdb, alphafold_db, pfam):
+    def __init__(self, entry=None, entry_name=None,
+                 protein_names=None, gene_names=None, organism=None,
+                 length=None, ec_number=None, kinetics=None,
+                 ph_dependence=None, temperature_dependence=None, mass=None,
+                 keywords=None, alphafold_db=None, pdb=None, pfam=None,
+                 signal_peptide=None, pubmed_id=None, doi_id=None):
 
-        #cada variavel recebe um valor
-
+        # Cada variável recebe um valor
         self.entry = entry
         self.entry_name = entry_name
         self.protein_names = protein_names
@@ -84,13 +17,20 @@ class ProteinEntry:
         self.organism = organism
         self.length = length
         self.ec_number = ec_number
-        self.pubmed_id = pubmed_id
-        self.pdb = pdb
+        self.kinetics = kinetics
+        self.ph_dependence = ph_dependence
+        self.temperature_dependence = temperature_dependence
+        self.mass = mass
+        self.keywords = keywords
         self.alphafold_db = alphafold_db
+        self.pdb = pdb
         self.pfam = pfam
+        self.signal_peptide = signal_peptide
+        self.pubmed_id = pubmed_id
+        self.doi_id = doi_id
 
     def to_dict(self):
-        # um dicionário é retornado
+        # Um dicionário é retornado
         return {
             "entry": self.entry,
             "entry_name": self.entry_name,
@@ -99,22 +39,35 @@ class ProteinEntry:
             "organism": self.organism,
             "length": self.length,
             "ec_number": self.ec_number,
-            "pubmed_id": self.pubmed_id,
-            "pdb": self.pdb,
+            "kinetics": self.kinetics,
+            "ph_dependence": self.ph_dependence,
+            "temperature_dependence": self.temperature_dependence,
+            "mass": self.mass,
+            "keywords": self.keywords,
             "alphafold_db": self.alphafold_db,
-            "pfam": self.pfam
+            "pdb": self.pdb,
+            "pfam": self.pfam,
+            "signal_p": self.signal_peptide,
+            "pubmed_id": self.pubmed_id,
+            "doi_id": self.doi_id
         }
 
-class MONGOdb:
+class MongoDB:
     def __init__(self):
         self.client = None
         self.db = None
         self.collection = None
 
     def connect_to_mongodb(self):
-        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["inulinases_database"]
-        self.collection = self.db["protein_entries"]
+        try:
+            self.client = pymongo.MongoClient("mongodb://localhost:27017/")
+            self.db = self.client["inulinases_database"]
+            # getting database
+            self.collection = self.db["protein_entries"]
+            # getting collection
+            print("Connected to MongoDB")
+        except pymongo.errors.ConnectionFailure:
+            print("Failed to connect to MongoDB")
 
     def insert_data(self, protein):
         entry_data = protein.to_dict()
@@ -124,24 +77,18 @@ class MONGOdb:
     def retrieve_protein(self, entry_id):
         result = self.collection.find_one({"entry": entry_id})
         if result:
-            return ProteinEntry(**result)
+            valid_arguments = {key: result[key] for key in ProteinEntry.__init__.__code__.co_varnames if key in result}
+            return ProteinEntry(**valid_arguments)
         return None
 
     def close_connection(self):
         if self.client:
             self.client.close()
+            print("Connection to MongoDB closed")
 
 
 if __name__ == "__main__":
-    db = SQLdb()
-    db.create_table()
-    # Você precisa fornecer dados para insert_data e insert_dataset.
-    # Exemplo:
-    # db.insert_data("value1", "value2", "value3", "value4", "value5", "value6", "value7", "value8", "value9", "value10", "value11")
-    # db.insert_dataset(["value1,value2,value3,value4,value5,value6,value7,value8,value9,value10,value11"])
-    db.close_connection()
-
-    db = MONGOdb()
+    db = MongoDB()
     db.connect_to_mongodb()
 
     protein_data = {
@@ -152,10 +99,17 @@ if __name__ == "__main__":
         "organism": "Example Organism",
         "length": 300,
         "ec_number": "1.2.3.4",
+        "kinetics": 5.5,
+        "ph_dependence": 7.5,
+        "temperature_dependence": 37.0,
+        "mass": 50.5,
+        "keywords": ["inu", "gh32"],
+        "alphafold_db": "ASHI086",
+        "pdb": ["1XTC", "1PZM"],
+        "pfam": ["PFAM1", "PFAM2"],
+        "signal_peptide": "1...25",
         "pubmed_id": "PMID12345",
-        "pdb": ["PDB1", "PDB2"],
-        "alphafold_db": "AlphaFoldDB123",
-        "pfam": ["PFAM1", "PFAM2"]
+        "doi_id": "DOI123"
     }
 
     protein = ProteinEntry(**protein_data)
