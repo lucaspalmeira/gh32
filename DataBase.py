@@ -52,33 +52,63 @@ class ProteinEntry:
             "doi_id": self.doi_id
         }
 
+
+class SeqsEntry:
+    def __init__(self, header, seq):
+        self.header = header
+        self.seq = seq
+
+    def to_dict(self):
+        return {
+        "header": self.header,
+        "seq": self.seq
+        }
+
+
 class MongoDB:
     def __init__(self):
         self.client = None
         self.db = None
-        self.collection = None
+        self.protein_collection = None
+        self.seqs_collection = None
 
     def connect_to_mongodb(self):
         try:
             self.client = pymongo.MongoClient("mongodb://localhost:27017/")
             self.db = self.client["inulinases_database"]
-            # getting database
-            self.collection = self.db["protein_entries"]
-            # getting collection
+            # creating database
+            self.protein_collection = self.db["protein_entries"]
+            # creating a collection of protein data
+            self.seqs_collection = self.db["seqs_entries"]
+            # creating collection of fasta sequences
             print("Connected to MongoDB")
         except pymongo.errors.ConnectionFailure:
             print("Failed to connect to MongoDB")
 
     def insert_data(self, protein):
         entry_data = protein.to_dict()
-        insertion_result = self.collection.insert_one(entry_data)
+        insertion_result = self.protein_collection.insert_one(entry_data)
         return insertion_result.inserted_id
 
     def retrieve_protein(self, entry_id):
-        result = self.collection.find_one({"entry": entry_id})
+        result = self.protein_collection.find_one({"entry": entry_id})
         if result:
             valid_arguments = {key: result[key] for key in ProteinEntry.__init__.__code__.co_varnames if key in result}
             return ProteinEntry(**valid_arguments)
+        return None
+
+    def insert_seqs_data(self, seqs_entry):
+        entry_data = seqs_entry.to_dict()
+        insertion_result = self.seqs_collection.insert_one(entry_data)
+        return insertion_result.inserted_id
+
+    def retrieve_seq(self, header_id):
+        result = self.seqs_collection.find_one({"header": header_id})
+        if result:
+            valid_arguments = {key: result[key] for key in
+                               SeqsEntry.__init__.__code__.co_varnames if
+                               key in result}
+            return SeqsEntry(**valid_arguments)
         return None
 
     def close_connection(self):
@@ -116,8 +146,28 @@ if __name__ == "__main__":
     db.insert_data(protein)
 
     retrieved_protein = db.retrieve_protein("P12345")
+
+    # Dados de sequência
+    seqs_data = {
+        "header": "O33832",
+        "seq": "MDRLDFSIKLLRKVGHLLMIHWGRVDNVEKKTGFKDIVTEIDREAQRMIVDEIRKFFPDE"
+               "NIMAEEGIFEKGDRLWIIDPIDGTINFVHGLPNFSISLAYVENGEVKLGVVHAPALNETL"
+               "YAEEGSGAFFNGERIRVSENASLEECVGSTGSYVDFTGKFIERMEKRTRRIRILGSAALN"
+               "AAYVGAGRVDFFVTWRINPWDIAAGLIIVKEAGGMVTDFSGKEANAFSKNFIFSNGLIHD"
+               "EVVKVVNEVVEEIGGK"
+    }
+
+    seqs_entry = SeqsEntry(**seqs_data)
+    db.insert_seqs_data(seqs_entry)
+
     if retrieved_protein:
         print("Retrieved Protein Entry:")
         print(retrieved_protein.to_dict())
+
+    retrieved_seq = db.retrieve_seq("O33832")
+
+    if retrieved_seq:
+        print("Retrieved Sequence Entry:")
+        print(retrieved_seq.to_dict())
 
     db.close_connection()
