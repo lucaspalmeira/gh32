@@ -9,7 +9,6 @@ class ProteinEntry:
                  keywords=None, alphafold_db=None, pdb=None, pfam=None,
                  signal_peptide=None, pubmed_id=None, doi_id=None):
 
-        # Cada variável recebe um valor
         self.entry = entry
         self.entry_name = entry_name
         self.protein_names = protein_names
@@ -30,7 +29,6 @@ class ProteinEntry:
         self.doi_id = doi_id
 
     def to_dict(self):
-        # Um dicionário é retornado
         return {
             "entry": self.entry,
             "entry_name": self.entry_name,
@@ -63,6 +61,7 @@ class SeqsEntry:
         "header": self.header,
         "seq": self.seq
         }
+
 
 class DescEntry:
     def __init__(self, header, aa_percent=None, charge_ph=None,
@@ -121,7 +120,9 @@ class MongoDB:
     def retrieve_protein(self, entry_id):
         result = self.protein_collection.find_one({"entry": entry_id})
         if result:
-            valid_arguments = {key: result[key] for key in ProteinEntry.__init__.__code__.co_varnames if key in result}
+            valid_arguments = {key: result[key] for key in
+                               ProteinEntry.__init__.__code__.co_varnames if
+                               key in result}
             return ProteinEntry(**valid_arguments)
         return None
 

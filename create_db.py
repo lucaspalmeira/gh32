@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 import requests
 from io import StringIO
@@ -57,7 +58,8 @@ def get_uniprot_fasta(query):
 
 def filter_inulinases():
     df = get_uniprot_data('inulinase')
-    inulinase_selection = df[df['Protein names'].str.contains('inulinase|Inulinase', case=False)]
+    inulinase_selection = df[
+        df['Protein names'].str.contains('inulinase|Inulinase', case=False)]
     inulinase_selection = inulinase_selection.reset_index(drop=True)
     inulinase_selection.to_csv('inulinases_clean.csv')
     return inulinase_selection
@@ -88,6 +90,68 @@ def csv_to_dict():
     df = filter_inulinases()
     entries_list = []
 
+    def km(string):
+        if 'KM=' in string:
+            regex = r'KM=(\d+\.\d+)\s+mM'
+            match = re.search(regex, string)
+            if match:
+                return match.group(1)
+        return None
+
+    def pH(string):
+        if 'pH' in string:
+            regex = r'Optimum pH is (\d+\.\d+)'
+            match = re.search(regex, string)
+            if match:
+                return match.group(1)
+        return None
+
+    def temp(string):
+        if 'temperature is' in string:
+            regex = r'temperature is (\d+)'
+            match = re.search(regex, string)
+            if match:
+                return match.group(1)
+        return None
+
+    def keywords_split(string):
+        if pd.isna(string):
+            return None
+        return string.split(';')
+
+    def pfam_split(string):
+        if pd.isna(string):
+            return None
+        pfam_list = string.split(';')
+        return [pfam.strip() for pfam in pfam_list if pfam.strip()]
+
+    def pdb_split(string):
+        if pd.isna(string) or string.lower() == 'nan':
+            return None
+        list_pdb = string.split(';')
+        return [pdb.strip() for pdb in list_pdb if pdb.strip()]
+
+    def signalp_split(string):
+        if pd.isna(string) or str(string).lower() == 'nan':
+            return None
+        else:
+            regex = r'SIGNAL (\d+\..\d+)'
+            match = re.search(regex, str(string))
+            if match:
+                return match.group(1)
+
+    def pubmed_split(string):
+        if pd.isna(string) or string.lower() == 'nan':
+            return None
+        list_pubmed = string.split(';')
+        return [pubmed.strip() for pubmed in list_pubmed if pubmed.strip()]
+
+    def doi_split(string):
+        if pd.isna(string) or string.lower() == 'nan':
+            return None
+        list_doi = string.split(';')
+        return [doi.strip() for doi in list_doi if doi.strip()]
+
     for index, row in df.iterrows():
         entry_dict = {
             "entry": row['Entry'],
@@ -97,17 +161,18 @@ def csv_to_dict():
             "organism": row['Organism'],
             "length": row['Length'],
             "ec_number": row['EC number'],
-            "kinetics": row['Kinetics'],
-            "ph_dependence": row['pH dependence'],
-            "temperature_dependence": row['Temperature dependence'],
+            "kinetics": km(str(row['Kinetics'])),
+            "ph_dependence": pH(str(row['pH dependence'])),
+            "temperature_dependence": temp(
+                str(row['Temperature dependence'])),
             "mass": row['Mass'],
-            "keywords": row['Keywords'],
+            "keywords": keywords_split(row['Keywords']),
             "alphafold_db": row['AlphaFoldDB'],
-            "pdb": row['PDB'],
-            "pfam": row['Pfam'],
-            "signal_peptide": row['Signal peptide'],
-            "pubmed_id": row['PubMed ID'],
-            "doi_id": row['DOI ID']
+            "pdb": pdb_split(row['PDB']),
+            "pfam": pfam_split(row['Pfam']),
+            "signal_peptide": signalp_split(row['Signal peptide']),
+            "pubmed_id": pubmed_split(row['PubMed ID']),
+            "doi_id": doi_split(row['DOI ID'])
         }
 
         entries_list.append(entry_dict)
@@ -174,9 +239,12 @@ if __name__ == "__main__":
     list_dict = csv_to_dict()
     seqs_fasta = fasta_to_dict()
 
+    for i in list_dict:
+        print(i)
+
     db = MongoDB()
     db.connect_to_mongodb()
-    
+
     for data_dict in list_dict:
         protein = ProteinEntry(**data_dict)
         db.insert_data(protein)
