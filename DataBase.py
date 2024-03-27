@@ -90,6 +90,31 @@ class DescEntry:
         }
 
 
+class TaxonEntry:
+    def __init__(self, entry, Superkingdom=None, Kingdom=None, Phylum=None,
+                 Class=None, Order=None, Family=None, Genus=None):
+        self.entry = entry
+        self.Superkingdom = Superkingdom
+        self.Kingdom = Kingdom
+        self.Phylum = Phylum
+        self.Class = Class
+        self.Order = Order
+        self.Family = Family
+        self.Genus = Genus
+
+    def to_dict(self):
+        return {
+            'entry': self.entry,
+            'Superkingdom': self.Superkingdom,
+            'Kingdom': self.Kingdom,
+            'Phylum': self.Phylum,
+            'Class': self.Class,
+            'Order': self.Order,
+            'Family': self.Family,
+            'Genus': self.Genus
+        }
+
+
 class MongoDB:
     def __init__(self):
         self.client = None
@@ -97,17 +122,16 @@ class MongoDB:
         self.protein_collection = None
         self.seqs_collection = None
         self.desc_collection = None
+        self.taxon_collection = None
 
     def connect_to_mongodb(self):
         try:
             self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-            self.db = self.client["inulinases_database"]
-            # creating database
+            self.db = self.client["inudb"]
             self.protein_collection = self.db["protein_entries"]
-            # creating a collection of protein data
             self.seqs_collection = self.db["seqs_entries"]
-            # creating collection of fasta sequences
             self.desc_collection = self.db["desc_entries"]
+            self.taxon_collection = self.db["taxon_entries"]
             print("Connected to MongoDB")
         except pymongo.errors.ConnectionFailure:
             print("Failed to connect to MongoDB")
@@ -149,9 +173,23 @@ class MongoDB:
         result = self.desc_collection.find_one({"header": header_id})
         if result:
             valid_arguments = {key: result[key] for key in
-                               SeqsEntry.__init__.__code__.co_varnames if
+                               DescEntry.__init__.__code__.co_varnames if
                                key in result}
             return DescEntry(**valid_arguments)
+        return None
+
+    def insert_taxon_data(self, taxon_entry):
+        taxon_data = taxon_entry.to_dict()
+        insertion_result = self.taxon_collection.insert_one(taxon_data)
+        return insertion_result.inserted_id
+
+    def retrieve_taxon(self, header_id):
+        result = self.taxon_collection.find_one({"header": header_id})
+        if result:
+            valid_arguments = {key: result[key] for key in
+                               TaxonEntry.__init__.__code__.co_varnames if
+                               key in result}
+            return TaxonEntry(**valid_arguments)
         return None
 
     def close_connection(self):
