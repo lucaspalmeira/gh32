@@ -291,9 +291,6 @@ if __name__ == "__main__":
     list_dict = csv_to_dict()
     seqs_fasta = fasta_to_dict()
 
-    for i in list_dict:
-        print(i)
-
     db = MongoDB()
     db.connect_to_mongodb()
 
