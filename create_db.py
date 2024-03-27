@@ -3,8 +3,9 @@ import pandas as pd
 import requests
 from io import StringIO
 from Bio import SeqIO
+from Bio import Entrez
 from Bio.SeqUtils import ProtParam
-from DataBase import ProteinEntry, MongoDB, SeqsEntry, DescEntry
+from DataBase import MongoDB, ProteinEntry, SeqsEntry, DescEntry, TaxonEntry
 
 
 def get_uniprot_data(query):
@@ -234,6 +235,57 @@ def calc_descriptor(header, seq):
         return desc_dict
 
 
+def get_taxon():
+
+    Entrez.email = "lspalmeira.bio@gmail.com"
+
+    df = filter_inulinases()
+
+    list_dict = []
+
+    for index, row in df.iterrows():
+        organism_id = row['Organism (ID)']
+
+        rank_mapping = {
+            "superkingdom": "Superkingdom",
+            "kingdom": "Kingdom",
+            "phylum": "Phylum",
+            "class": "Class",
+            "order": "Order",
+            "family": "Family",
+            "genus": "Genus"
+        }
+
+        try:
+            handle = Entrez.efetch(db="taxonomy", id=organism_id,
+                                   retmode="xml")
+            taxon_record = Entrez.read(handle)
+
+            taxon_details = {'entry': row['Entry']}
+            for item in taxon_record[0]["LineageEx"]:
+                rank = item["Rank"]
+                if rank in rank_mapping:
+                    taxon_details[rank_mapping[rank]] = item["ScientificName"]
+
+            list_dict.append(taxon_details)
+
+        except Exception as e:
+            taxon_none = {
+                'entry': row['Entry'],
+                'Superkingdom': None,
+                'Kingdom': None,
+                'Phylum': None,
+                'Class': None,
+                'Order': None,
+                'Family': None,
+                'Genus': None
+            }
+
+            list_dict.append(taxon_none)
+
+    return list_dict
+
+
 if __name__ == "__main__":
 
     list_dict = csv_to_dict()
@@ -257,3 +309,9 @@ if __name__ == "__main__":
         desc_calc = calc_descriptor(seqs_data['header'], seqs_data['seq'])
         desc_entry = DescEntry(**desc_calc)
         db.insert_desc_data(desc_entry)
+
+    list_taxon = get_taxon()
+
+    for dict_taxon in list_taxon:
+        taxon = TaxonEntry(**dict_taxon)
+        db.insert_taxon_data(taxon)
