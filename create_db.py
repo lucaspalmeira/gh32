@@ -1,15 +1,152 @@
-import re
 import pandas as pd
 import requests
 from io import StringIO
 from Bio import SeqIO
 from Bio import Entrez
+import sys, errno, re, json, ssl
+from urllib import request
+from urllib.error import HTTPError
+from time import sleep
 from Bio.SeqUtils import ProtParam
 from DataBase import MongoDB, ProteinEntry, SeqsEntry, DescEntry, TaxonEntry
 
 
-def get_uniprot_data(query):
-    tsv_base_url = 'https://rest.uniprot.org/uniprotkb/stream'
+def parse_items(items):
+    if type(items) == list:
+        return ",".join(items)
+    return ""
+
+
+def parse_member_databases(dbs):
+    if type(dbs) == dict:
+        return ";".join([f"{db}:{','.join(dbs[db])}" for db in dbs.keys()])
+    return ""
+
+
+def parse_go_terms(gos):
+    if type(gos) == list:
+        return ",".join([go["identifier"] for go in gos])
+    return ""
+
+
+def parse_locations(locations):
+    if type(locations) == list:
+        return ",".join(
+            [",".join([f"{fragment['start']}..{fragment['end']}"
+                       for fragment in location["fragments"]]) for location in
+             locations])
+    return ""
+
+
+def parse_group_column(values, selector):
+    return ",".join([parse_column(value, selector) for value in values])
+
+
+def parse_column(value, selector):
+    if value is None:
+        return ""
+    elif "member_databases" in selector:
+        return parse_member_databases(value)
+    elif "go_terms" in selector:
+        return parse_go_terms(value)
+    elif "children" in selector:
+        return parse_items(value)
+    elif "locations" in selector:
+        return parse_locations(value)
+    return str(value)
+
+
+def gh32_interpro():
+    # disable SSL verification to avoid config issues
+    context = ssl._create_unverified_context()
+
+    BASE_URL = ("https://www.ebi.ac.uk:443/interpro/api/protein/UniProt/"
+                "entry/pfam/PF08244/taxonomy/uniprot/4751/?page_size=200")
+
+    next_url = BASE_URL
+    last_page = False
+
+    data = []
+
+    while next_url:
+        try:
+            req = request.Request(next_url,
+                                  headers={"Accept": "application/json"})
+            res = request.urlopen(req, context=context)
+            if res.status == 408:
+                sleep(61)
+                continue
+            elif res.status == 204:
+                break
+            payload = json.loads(res.read().decode())
+            next_url = payload["next"]
+            if not next_url:
+                last_page = True
+        except HTTPError as e:
+            if e.code == 408:
+                sleep(61)
+                continue
+            else:
+                raise e
+
+        for item in payload["results"]:
+            row = [
+                parse_column(item["metadata"]["accession"],
+                             'metadata.accession'),
+                parse_column(item["metadata"]["source_database"],
+                             'metadata.source_database'),
+                parse_column(item["metadata"]["name"], 'metadata.name'),
+                parse_column(item["metadata"]["source_organism"]["taxId"],
+                             'metadata.source_organism.taxId'),
+                parse_column(
+                    item["metadata"]["source_organism"]["scientificName"],
+                    'metadata.source_organism.scientificName'),
+                parse_column(item["metadata"]["length"], 'metadata.length'),
+                parse_column(item["entries"][0]["accession"],
+                             'entries[0].accession'),
+                parse_column(item["entries"][0]["entry_protein_locations"],
+                             'entries[0].entry_protein_locations')
+            ]
+            data.append(row)
+
+        if next_url:
+            sleep(1)
+
+    df = pd.DataFrame(data, columns=['Accession', 'Source Database', 'Name',
+                                     'Taxonomy ID', 'Scientific Name',
+                                     'Length', 'Entry Accession',
+                                     'Entry Protein Locations'])
+
+    accession = df['Accession']
+
+    df.to_csv('data_from_interpro.csv', index=False)
+
+    return accession
+
+
+def submit_id_mapping_job(ids, from_db, to_db):
+    url = 'https://rest.uniprot.org/idmapping/run'
+    data = {
+        'ids': ','.join(ids),
+        'from': from_db,
+        'to': to_db
+    }
+    response = requests.post(url, data=data)
+    if response.status_code == 200:
+        response_data = response.json()
+        job_id = response_data.get('jobId')
+        if job_id:
+            return job_id
+        else:
+            print("Erro: jobId não encontrado na resposta.")
+            return None
+    else:
+        print(f"Erro ao enviar solicitação: {response.status_code}")
+        return None
+
+
+def extract_id_mapping_results(job_id):
+    tsv_base_url = 'https://rest.uniprot.org/idmapping/uniprotkb/results/stream'
     params = {
         'fields': 'accession,reviewed,id,protein_name,gene_names,'
                   'organism_name,length,ec,kinetics,ph_dependence,'
@@ -18,77 +155,49 @@ def get_uniprot_data(query):
                   'lit_doi_id,protein_families,xref_alphafolddb,xref_pdb,'
                   'xref_geneid,xref_brenda,xref_pfam,go_f,go_p,ft_signal,'
                   'xref_cazy,xref_signalink,temp_dependence,organism_id',
-        'format': 'tsv',
-        'query': f'({query})'
+        'format': 'tsv'
     }
 
-    try:
-        response = requests.get(tsv_base_url, params=params)
-        response.raise_for_status()
+    url = f"{tsv_base_url}/{job_id}"
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.text
 
-        data = pd.read_csv(StringIO(response.text), delimiter='\t')
-        data.to_csv('inulinases.csv', index=False)
+        df = pd.read_csv(StringIO(data), delimiter='\t')
+        df.to_csv('gh32.csv', index=False)
 
-        return data
+        print("Dados extraídos com sucesso.")
 
-    except requests.exceptions.RequestException as error:
-        print(f'Falha na solicitação: {error}')
-        return None
+        return df
+    else:
+        print(f"Falha ao extrair dados. Status code: {response.status_code}")
 
 
-def get_uniprot_fasta(query):
-    fasta_base_url = 'https://rest.uniprot.org/uniprotkb/stream'
+def get_uniprot_fasta(job_id):
+    fasta_base_url = (f'https://rest.uniprot.org/idmapping/'
+                      f'uniprotkb/results/stream/{job_id}')
+
     params = {
-        'format': 'fasta',
-        'query': f'({query})'
+        'format': 'fasta'
     }
 
     try:
         response = requests.get(fasta_base_url, params=params)
         response.raise_for_status()
 
-        with open('inulinases_uniprot.fasta', 'w') as file:
+        with open('gh32.fasta', 'w') as file:
             file.write(response.text)
 
-        return 'inulinases_uniprot.fasta'
+        print('Download de sequências realizado.')
+
+        return 'gh32.fasta'
 
     except requests.exceptions.RequestException as error:
-        print(f'Falha na solicitação: {error}')
+        print(f'Download de sequências: falha na solicitação: {error}')
         return None
 
 
-def filter_inulinases():
-    df = get_uniprot_data('inulinase')
-    inulinase_selection = df[
-        df['Protein names'].str.contains('inulinase|Inulinase', case=False)]
-    inulinase_selection = inulinase_selection.reset_index(drop=True)
-    inulinase_selection.to_csv('inulinases_clean.csv')
-    return inulinase_selection
-
-
-def only_inulinases():
-    fasta = get_uniprot_fasta('inulinase')
-    df = filter_inulinases()
-    seqs_id = df['Entry']
-    seqs_id = set(seqs_id)
-    seqs_found = []
-
-    with open(fasta, 'r') as arq:
-        for record in SeqIO.parse(arq, 'fasta'):
-            entry = record.id.split('|')[1]
-            if entry in seqs_id:
-                record.id = f'{entry}'
-                record.description = ''
-                seqs_found.append(record)
-
-    with open('only_inulinases.fasta', 'w') as out:
-        SeqIO.write(seqs_found, out, 'fasta')
-
-    return seqs_found
-
-
-def csv_to_dict():
-    df = filter_inulinases()
+def csv_to_dict(df):
     entries_list = []
 
     def km(string):
@@ -155,25 +264,25 @@ def csv_to_dict():
 
     for index, row in df.iterrows():
         entry_dict = {
-            "entry": row['Entry'],
-            "entry_name": row['Entry Name'],
-            "protein_names": row['Protein names'],
-            "gene_names": row['Gene Names'],
-            "organism": row['Organism'],
-            "length": row['Length'],
-            "ec_number": row['EC number'],
-            "kinetics": km(str(row['Kinetics'])),
-            "ph_dependence": pH(str(row['pH dependence'])),
-            "temperature_dependence": temp(
+            'entry': row['Entry'],
+            'entry_name': row['Entry Name'],
+            'protein_names': row['Protein names'],
+            'gene_names': row['Gene Names'],
+            'organism': row['Organism'],
+            'length': row['Length'],
+            'ec_number': row['EC number'],
+            'kinetics': km(str(row['Kinetics'])),
+            'ph_dependence': pH(str(row['pH dependence'])),
+            'temperature_dependence': temp(
                 str(row['Temperature dependence'])),
-            "mass": row['Mass'],
-            "keywords": keywords_split(row['Keywords']),
-            "alphafold_db": row['AlphaFoldDB'],
-            "pdb": pdb_split(row['PDB']),
-            "pfam": pfam_split(row['Pfam']),
-            "signal_peptide": signalp_split(row['Signal peptide']),
-            "pubmed_id": pubmed_split(row['PubMed ID']),
-            "doi_id": doi_split(row['DOI ID'])
+            'mass': row['Mass'],
+            'keywords': keywords_split(row['Keywords']),
+            'alphafold_db': row['AlphaFoldDB'],
+            'pdb': pdb_split(row['PDB']),
+            'pfam': pfam_split(row['Pfam']),
+            'signal_peptide': signalp_split(row['Signal peptide']),
+            'pubmed_id': pubmed_split(row['PubMed ID']),
+            'doi_id': doi_split(row['DOI ID'])
         }
 
         entries_list.append(entry_dict)
@@ -181,34 +290,33 @@ def csv_to_dict():
     return entries_list
 
 
-def fasta_to_dict():
-    list_seqs = only_inulinases()
+def fasta_to_dict(list_seqs):
     seqs_list = []
 
     for record in list_seqs:
-        entry = f'>{record.id}'
+        entry = f'{record.id}'
         fasta_seq = str(record.seq)
-        seqs_data = {"header": entry, "seq": fasta_seq}
+        seqs_data = {'entry': entry, 'seq': fasta_seq}
         seqs_list.append(seqs_data)
     return seqs_list
 
 
-def calc_descriptor(header, seq):
+def calc_descriptor(entry, seq):
     def verify_x(s):
         for i in s:
             if i == 'X':
-                return "X found"
+                return 'X found'
             else:
                 continue
 
     verify = verify_x(seq)
 
-    if verify != "X found":
+    if verify != 'X found':
 
         protein_param = ProtParam.ProteinAnalysis(seq)
 
         desc_dict = {
-            'header': header[1:],
+            'entry': entry,
             'aa_percent': protein_param.get_amino_acids_percent(),
             'charge_ph': protein_param.charge_at_pH(7),
             'isoelectric_point': protein_param.isoelectric_point(),
@@ -222,7 +330,7 @@ def calc_descriptor(header, seq):
 
     else:
         desc_dict = {
-            'header': header[1:],
+            'entry': entry[1:],
             'aa_percent': None,
             'charge_ph': None,
             'isoelectric_point': None,
@@ -235,11 +343,9 @@ def calc_descriptor(header, seq):
         return desc_dict
 
 
-def get_taxon():
-
-    Entrez.email = "lspalmeira.bio@gmail.com"
-
-    df = filter_inulinases()
+def get_taxon(df, email):
+    # recebe o dataframe de acessos do uniprot
+    Entrez.email = email
 
     list_dict = []
 
@@ -247,13 +353,13 @@ def get_taxon():
         organism_id = row['Organism (ID)']
 
         rank_mapping = {
-            "superkingdom": "Superkingdom",
-            "kingdom": "Kingdom",
-            "phylum": "Phylum",
-            "class": "Class",
-            "order": "Order",
-            "family": "Family",
-            "genus": "Genus"
+            'superkingdom': 'Superkingdom',
+            'kingdom': 'Kingdom',
+            'phylum': 'Phylum',
+            'class': 'Class',
+            'order': 'Order',
+            'family': 'Family',
+            'genus': 'Genus'
         }
 
         try:
@@ -287,28 +393,50 @@ def get_taxon():
 
 
 if __name__ == "__main__":
-
-    list_dict = csv_to_dict()
-    seqs_fasta = fasta_to_dict()
+    entries = gh32_interpro()
+    ids = list(entries)
+    from_db = "UniProtKB_AC-ID"
+    to_db = "UniProtKB"
+    job_id = submit_id_mapping_job(ids, from_db, to_db)
 
     db = MongoDB()
     db.connect_to_mongodb()
 
-    for data_dict in list_dict:
-        protein = ProteinEntry(**data_dict)
-        db.insert_data(protein)
+    if job_id:
+        print(f"Solicitação enviada com sucesso. jobId: {job_id}")
+        data = extract_id_mapping_results(job_id)
+        list_dict = csv_to_dict(data)
 
-    for seqs_data in seqs_fasta:
-        seqs_entry = SeqsEntry(**seqs_data)
-        db.insert_seqs_data(seqs_entry)
+        for data_dict in list_dict:
+            protein = ProteinEntry(**data_dict)
+            db.insert_data(protein)
 
-    for seqs_data in seqs_fasta:
-        desc_calc = calc_descriptor(seqs_data['header'], seqs_data['seq'])
-        desc_entry = DescEntry(**desc_calc)
-        db.insert_desc_data(desc_entry)
+        list_taxon = get_taxon(data, 'lspalmeira@gmail.com')
 
-    list_taxon = get_taxon()
+        for dict_taxon in list_taxon:
+            taxon = TaxonEntry(**dict_taxon)
+            db.insert_taxon_data(taxon)
 
-    for dict_taxon in list_taxon:
-        taxon = TaxonEntry(**dict_taxon)
-        db.insert_taxon_data(taxon)
+        fasta_file = get_uniprot_fasta(job_id)
+
+        if fasta_file:
+            list_seqs = list(SeqIO.parse(fasta_file, "fasta"))
+
+            seqs_fasta = fasta_to_dict(list_seqs)
+
+            for seqs_data in seqs_fasta:
+                seqs_entry = SeqsEntry(**seqs_data)
+                db.insert_seqs_data(seqs_entry)
+
+            for seqs_data in seqs_fasta:
+                desc_calc = calc_descriptor(seqs_data['entry'],
+                                            seqs_data['seq'])
+                desc_entry = DescEntry(**desc_calc)
+                db.insert_desc_data(desc_entry)
+
+        else:
+            print("Falha ao obter dados em formato FASTA.")
+            sys.exit(1)
+    else:
+        print("Falha ao enviar solicitação.")
+        sys.exit(1)
