@@ -30,45 +30,45 @@ class ProteinEntry:
 
     def to_dict(self):
         return {
-            "entry": self.entry,
-            "entry_name": self.entry_name,
-            "protein_names": self.protein_names,
-            "gene_names": self.gene_names,
-            "organism": self.organism,
-            "length": self.length,
-            "ec_number": self.ec_number,
-            "kinetics": self.kinetics,
-            "ph_dependence": self.ph_dependence,
-            "temperature_dependence": self.temperature_dependence,
-            "mass": self.mass,
-            "keywords": self.keywords,
-            "alphafold_db": self.alphafold_db,
-            "pdb": self.pdb,
-            "pfam": self.pfam,
-            "signal_p": self.signal_peptide,
-            "pubmed_id": self.pubmed_id,
-            "doi_id": self.doi_id
+            'entry': self.entry,
+            'entry_name': self.entry_name,
+            'protein_names': self.protein_names,
+            'gene_names': self.gene_names,
+            'organism': self.organism,
+            'length': self.length,
+            'ec_number': self.ec_number,
+            'kinetics': self.kinetics,
+            'ph_dependence': self.ph_dependence,
+            'temperature_dependence': self.temperature_dependence,
+            'mass': self.mass,
+            'keywords': self.keywords,
+            'alphafold_db': self.alphafold_db,
+            'pdb': self.pdb,
+            'pfam': self.pfam,
+            'signal_p': self.signal_peptide,
+            'pubmed_id': self.pubmed_id,
+            'doi_id': self.doi_id
         }
 
 
 class SeqsEntry:
-    def __init__(self, header, seq):
-        self.header = header
+    def __init__(self, entry, seq):
+        self.entry = entry
         self.seq = seq
 
     def to_dict(self):
         return {
-        "header": self.header,
-        "seq": self.seq
+        'entry': self.entry,
+        'seq': self.seq
         }
 
 
 class DescEntry:
-    def __init__(self, header, aa_percent=None, charge_ph=None,
+    def __init__(self, entry, aa_percent=None, charge_ph=None,
                  isoelectric_point=None, aromaticity=None,
                  flexibility=None, gravy=None, sec_struc_frac=None):
 
-        self.header = header
+        self.entry = entry
         self.aa_percent = aa_percent
         self.charge_ph = charge_ph
         self.isoelectric_point = isoelectric_point
@@ -79,7 +79,7 @@ class DescEntry:
 
     def to_dict(self):
         return {
-            'header': self.header,
+            'entry': self.entry,
             'aa_percent': self.aa_percent,
             'charge_ph': self.charge_ph,
             'isoelectric_point': self.isoelectric_point,
@@ -123,18 +123,24 @@ class MongoDB:
         self.seqs_collection = None
         self.desc_collection = None
         self.taxon_collection = None
+        self.collections_to_filter = None
 
     def connect_to_mongodb(self):
         try:
-            self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-            self.db = self.client["inudb"]
-            self.protein_collection = self.db["protein_entries"]
-            self.seqs_collection = self.db["seqs_entries"]
-            self.desc_collection = self.db["desc_entries"]
-            self.taxon_collection = self.db["taxon_entries"]
-            print("Connected to MongoDB")
+            self.client = pymongo.MongoClient('mongodb://localhost:27017/')
+            self.db = self.client['gh32']
+            self.protein_collection = self.db['protein_entries']
+            self.seqs_collection = self.db['seqs_entries']
+            self.desc_collection = self.db['desc_entries']
+            self.taxon_collection = self.db['taxon_entries']
+            
+            self.collections_to_filter = ['protein_entries',
+                                          'desc_entries',
+                                          'seqs_entries',
+                                          'taxon_entries']
+            print('Connected to MongoDB')
         except pymongo.errors.ConnectionFailure:
-            print("Failed to connect to MongoDB")
+            print('Failed to connect to MongoDB')
 
     def insert_data(self, protein):
         entry_data = protein.to_dict()
@@ -142,7 +148,7 @@ class MongoDB:
         return insertion_result.inserted_id
 
     def retrieve_protein(self, entry_id):
-        result = self.protein_collection.find_one({"entry": entry_id})
+        result = self.protein_collection.find_one({'entry': entry_id})
         if result:
             valid_arguments = {key: result[key] for key in
                                ProteinEntry.__init__.__code__.co_varnames if
@@ -155,8 +161,8 @@ class MongoDB:
         insertion_result = self.seqs_collection.insert_one(entry_data)
         return insertion_result.inserted_id
 
-    def retrieve_seq(self, header_id):
-        result = self.seqs_collection.find_one({"header": header_id})
+    def retrieve_seq(self, entry_id):
+        result = self.seqs_collection.find_one({'entry': entry_id})
         if result:
             valid_arguments = {key: result[key] for key in
                                SeqsEntry.__init__.__code__.co_varnames if
@@ -169,8 +175,8 @@ class MongoDB:
         insertion_result = self.desc_collection.insert_one(desc_data)
         return insertion_result.inserted_id
 
-    def retrieve_desc(self, header_id):
-        result = self.desc_collection.find_one({"header": header_id})
+    def retrieve_desc(self, entry_id):
+        result = self.desc_collection.find_one({'entry': entry_id})
         if result:
             valid_arguments = {key: result[key] for key in
                                DescEntry.__init__.__code__.co_varnames if
@@ -183,8 +189,8 @@ class MongoDB:
         insertion_result = self.taxon_collection.insert_one(taxon_data)
         return insertion_result.inserted_id
 
-    def retrieve_taxon(self, header_id):
-        result = self.taxon_collection.find_one({"header": header_id})
+    def retrieve_taxon(self, entry_id):
+        result = self.taxon_collection.find_one({'entry': entry_id})
         if result:
             valid_arguments = {key: result[key] for key in
                                TaxonEntry.__init__.__code__.co_varnames if
@@ -195,60 +201,4 @@ class MongoDB:
     def close_connection(self):
         if self.client:
             self.client.close()
-            print("Connection to MongoDB closed")
-
-
-if __name__ == "__main__":
-    db = MongoDB()
-    db.connect_to_mongodb()
-
-    protein_data = {
-        "entry": "P12345",
-        "entry_name": "PROT123",
-        "protein_names": ["Protein A", "Protein B"],
-        "gene_names": ["Gene A", "Gene B"],
-        "organism": "Example Organism",
-        "length": 300,
-        "ec_number": "1.2.3.4",
-        "kinetics": 5.5,
-        "ph_dependence": 7.5,
-        "temperature_dependence": 37.0,
-        "mass": 50.5,
-        "keywords": ["inu", "gh32"],
-        "alphafold_db": "ASHI086",
-        "pdb": ["1XTC", "1PZM"],
-        "pfam": ["PFAM1", "PFAM2"],
-        "signal_peptide": "1...25",
-        "pubmed_id": "PMID12345",
-        "doi_id": "DOI123"
-    }
-
-    protein = ProteinEntry(**protein_data)
-    db.insert_data(protein)
-
-    retrieved_protein = db.retrieve_protein("P12345")
-
-    # Dados de sequência
-    seqs_data = {
-        "header": "O33832",
-        "seq": "MDRLDFSIKLLRKVGHLLMIHWGRVDNVEKKTGFKDIVTEIDREAQRMIVDEIRKFFPDE"
-               "NIMAEEGIFEKGDRLWIIDPIDGTINFVHGLPNFSISLAYVENGEVKLGVVHAPALNETL"
-               "YAEEGSGAFFNGERIRVSENASLEECVGSTGSYVDFTGKFIERMEKRTRRIRILGSAALN"
-               "AAYVGAGRVDFFVTWRINPWDIAAGLIIVKEAGGMVTDFSGKEANAFSKNFIFSNGLIHD"
-               "EVVKVVNEVVEEIGGK"
-    }
-
-    seqs_entry = SeqsEntry(**seqs_data)
-    db.insert_seqs_data(seqs_entry)
-
-    if retrieved_protein:
-        print("Retrieved Protein Entry:")
-        print(retrieved_protein.to_dict())
-
-    retrieved_seq = db.retrieve_seq("O33832")
-
-    if retrieved_seq:
-        print("Retrieved Sequence Entry:")
-        print(retrieved_seq.to_dict())
-
-    db.close_connection()
+            print('Connection to MongoDB closed')
