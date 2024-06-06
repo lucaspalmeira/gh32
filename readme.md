@@ -1,14 +1,93 @@
-Start MongoDB.
+### MongoDB
+
+Start MongoDB
 ```bash
 sudo systemctl start mongod
 ```
 
-Verify that MongoDB has started successfully.
+Verify that MongoDB has started successfully
 ```bash
 sudo systemctl status mongod
 ```
 
-Stop MongoDB.
+Stop MongoDB
 ```bash
 sudo systemctl stop mongod
+```
+
+### Criar banco de dados de inulinases fúngicas
+Execute
+```bash
+python create_db.py
+```
+
+
+### Calcular número de comissão enzimática (EC number) com o CLEAN
+
+Clone o repositório.
+```bash
+git clone https://github.com/tttianhao/CLEAN.git
+```
+
+Navegue até o diretório CLEAN/
+```bash
+cd CLEAN/
+```
+
+Criar variável de ambiente com a versão 3.11 do Python
+```bash
+conda create --name clean_env python=3.11
+```
+
+Ativar a veriável de ambiente
+```bash
+conda activate clan_env
+```
+
+Instale as bibliotecas
+```bash
+pip install -r requirements.txt
+```
+
+Instale o Pytorch
+```bash
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+```
+
+Compile o CLEAN
+```bash
+python build.py install
+```
+
+Clone o repositório ESM e crie a pasta data/esm_data
+```bash
+git clone https://github.com/facebookresearch/esm.git
+mkdir data/esm_data
+```
+
+Preparando seus dados
+Mova seu arquivo fasta (ex.: query.fasta) para a pasta 'data/inputs'.
+
+Exemplo:
+
+```bash
+>Sequence1
+MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVGA
+>Sequence2
+MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPK
+```
+
+Execute a predição na pasta CLEAN/app
+```bash
+python CLEAN_infer_fasta.py --fasta_data query
+```
+
+Os resultados estarão na pasta 'results' em formato CSV
+```bash
+results/query_maxsep.csv
+```
+
+Desativar a vaariável de ambiente
+```bash
+conda deactivate
 ```
