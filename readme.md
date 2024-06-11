@@ -1,29 +1,27 @@
 ### Using GH32
 
-Clone o repositório
+Clone o repositório:
 ```bash
 git clone https://github.com/lucaspalmeira/gh32.git
 ```
 
-Crie o ambiente
-
+Crie o ambiente:
 ```bash
 conda create -n GH32 python==3.11.9 -y
 conda activate GH32
 ```
 
-Instale as bibliotecas
+Instale as bibliotecas:
 ```bash
 pip install -r requirements.txt
 ```
 
-Start MongoDB
+Inicie o MongoDB:
 ```bash
 sudo systemctl start mongod
 ```
 
-Criar banco de dados de inulinases fúngicas
-
+Criar banco de dados de inulinases fúngicas:
 Execute
 ```bash
 python create_db.py
@@ -32,57 +30,51 @@ python create_db.py
 
 ### Calcular número de comissão enzimática (EC number) com o CLEAN
 
-Clone o repositório.
+Clone o repositório:
 ```bash
 git clone https://github.com/tttianhao/CLEAN.git
 ```
 
-Navegue até o diretório CLEAN/
+Navegue até o diretório '**CLEAN/**':
 ```bash
 cd CLEAN/
 ```
 
-Criar variável de ambiente com a versão 3.11 do Python
+Crie uma variável de ambiente com a versão 3.11 do Python:
 ```bash
 conda create --name clean_env python=3.11
 ```
 
-Ativar a veriável de ambiente
+Ative a veriável de ambiente:
 ```bash
 conda activate clan_env
 ```
 
-Instale as bibliotecas
+Instale as bibliotecas:
 ```bash
 pip install -r requirements.txt
 ```
 
-Instale o Pytorch
+Instale o Pytorch:
 ```bash
 conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
 
-Compile o CLEAN
+Compile o CLEAN:
 ```bash
 python build.py install
 ```
 
-Clone o repositório ESM e crie o diretório '**data/esm_data**'
+Clone o repositório ESM e crie o diretório '**data/esm_data**':
 ```bash
 git clone https://github.com/facebookresearch/esm.git
 mkdir data/esm_data
 ```
 
 Preparando seus dados
-Mova seu arquivo fasta ('**gh32.fasta**') para a pasta 'data/inputs'.
-
-Exemplo:
-
+Mova o arquivo fasta ('**gh32.fasta**') para a pasta 'data/inputs':
 ```bash
->Sequence1
-MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVGA
->Sequence2
-MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPK
+mv gh32.fasta CLEAN/app/data/inputs
 ```
 
 Execute a predição na pasta CLEAN/app/
@@ -95,7 +87,7 @@ Os resultados estarão na pasta '**results**' em formato CSV
 results/query_maxsep.csv
 ```
 
-Desativar a vaariável de ambiente
+Desative a variável de ambiente:
 ```bash
 conda deactivate
 ```
@@ -106,8 +98,7 @@ Os resultados gerados pelo CLEAN serão lidos ('**gh32_maxsep.csv**')
 e cada EC será alterado ou adiocionado de acordo com a sua respectiva 
 entrada ('**entry**').
 
-Execute
-
+Execute:
 ```bash
 python ec_clean.py
 ```
