@@ -99,3 +99,18 @@ Desativar a vaariável de ambiente
 ```bash
 conda deactivate
 ```
+
+### Alteração e inclusão do EC number na collection 'protein_entries'
+
+Os resultados gerados pelo CLEAN serão lidos ('gh32_maxsep.csv') 
+e cada EC será alterado ou adiocionado de acordo com a sua respectiva 
+entrada ('entry').
+
+Execute
+
+```bash
+python ec_clean.py
+```
+
+Um arquivo de saída ('gh32_maxsep_clean.csv') será criado contendo 
+os dados limpos.
