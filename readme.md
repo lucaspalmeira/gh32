@@ -21,7 +21,8 @@ Inicie o MongoDB:
 sudo systemctl start mongod
 ```
 
-Criar banco de dados de inulinases fúngicas:
+Crie o banco de dados de inulinases fúngicas:
+
 Execute
 ```bash
 python create_db.py
