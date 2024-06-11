@@ -95,13 +95,15 @@ def gh32_interpro():
                              'metadata.accession'),
                 parse_column(item["metadata"]["source_database"],
                              'metadata.source_database'),
-                parse_column(item["metadata"]["name"], 'metadata.name'),
+                parse_column(item["metadata"]["name"],
+                             'metadata.name'),
                 parse_column(item["metadata"]["source_organism"]["taxId"],
                              'metadata.source_organism.taxId'),
                 parse_column(
                     item["metadata"]["source_organism"]["scientificName"],
                     'metadata.source_organism.scientificName'),
-                parse_column(item["metadata"]["length"], 'metadata.length'),
+                parse_column(item["metadata"]["length"],
+                             'metadata.length'),
                 parse_column(item["entries"][0]["accession"],
                              'entries[0].accession'),
                 parse_column(item["entries"][0]["entry_protein_locations"],
@@ -122,6 +124,12 @@ def gh32_interpro():
     df.to_csv('data_from_interpro.csv', index=False)
 
     return accession
+
+
+def update(ids_interpro, ids_in_db):
+    new_ids = set(ids_in_db) - set(ids_interpro)
+    new_ids = list(new_ids)
+    return new_ids
 
 
 def submit_id_mapping_job(ids, from_db, to_db):
