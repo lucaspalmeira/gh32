@@ -3,7 +3,7 @@ import plotly.express as px
 from DataBase import MongoDB
 
 
-# Função para extrair o EC number
+# extrair o EC number
 def find_ec(title):
     start = title.find('EC:')
     if start == -1:
@@ -15,7 +15,7 @@ def find_ec(title):
     return ec
 
 
-# Função para extrair o ID
+# extrair o ID
 def find_id(title):
     parts = title.split('|')
     if len(parts) > 1:
@@ -52,38 +52,65 @@ def find_name_enzyme(ec):
     return enzyme_names.get(ec, 'Not in Glycoside Hydrolase Family 32')
 
 
-data_ec = []
+def remove_enzymes_not_in_gh32(db, valid_entries):
+    for collection_name in db.collections_to_filter:
+        collection = db.db[collection_name]
+        collection.delete_many({'entry': {'$nin': valid_entries}})
 
-enzyme_count = {}
 
-with open('gh32_maxsep.csv', 'r') as file:
-    lines = file.readlines()
-    for line in lines:
-        EC = find_ec(line)
-        ID = find_id(line)
-        NAME = find_name_enzyme(EC)
-        data_ec.append({'entry': ID, 'ec_number': EC, 'enzyme_name': NAME})
+def process(file):
+    data_ec = []
 
-        if NAME in enzyme_count:
-            enzyme_count[NAME] += 1
-        else:
-            enzyme_count[NAME] = 1
+    enzyme_count = {}
 
-df = pd.DataFrame(data_ec)
-df.to_csv('gh32_maxsep_clean.csv', index=False)
+    with open(file, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            EC = find_ec(line)
+            ID = find_id(line)
+            NAME = find_name_enzyme(EC)
+            data_ec.append({'entry': ID, 'ec_number': EC,
+                            'enzyme_name': NAME})
 
-db = MongoDB()
-db.connect_to_mongodb()
+            if NAME in enzyme_count:
+                enzyme_count[NAME] += 1
+            else:
+                enzyme_count[NAME] = 1
 
-db.update_ec_number(df)
-db.close_connection()
+    return [data_ec, enzyme_count]
 
-enzyme_df = pd.DataFrame(list(enzyme_count.items()),
-                         columns=['NAME', 'COUNT'])
 
-title = 'Distribuição de Enzimas na Família 32 das Glicosídeo Hidrolases'
-fig = px.pie(enzyme_df, values='COUNT', names='NAME', width=1200, height=800,
-             title=title)
-fig.update_traces(textinfo='percent+value')
+def main():
 
-fig.write_image('distribuicao_enzimas_gh32.png')
+    data_ec, enzyme_count = process('gh32_maxsep.csv')
+
+    df = pd.DataFrame(data_ec)
+    df.to_csv('gh32_maxsep_clean.csv', index=False)
+
+    db = MongoDB()
+    db.connect_to_mongodb()
+
+    # adição dos dados preditivos de EC
+    db.update_ec_number(df)
+
+    valid_entries = df['entry'].tolist()
+
+    # remoção de entradas de sequêncais que não pertecem a GH32
+    remove_enzymes_not_in_gh32(db, valid_entries)
+
+    db.close_connection()
+
+    enzyme_df = pd.DataFrame(list(enzyme_count.items()),
+                             columns=['NAME', 'COUNT'])
+
+    title = 'Distribuição de Enzimas na Família 32 das Glicosídeo Hidrolases'
+    fig = px.pie(enzyme_df, values='COUNT', names='NAME', width=1200,
+                 height=800, title=title)
+
+    fig.update_traces(textinfo='percent+value')
+
+    fig.write_image('distribuicao_enzimas_gh32.png')
+
+
+if __name__ == '__main__':
+    main()
