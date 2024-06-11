@@ -67,14 +67,14 @@ Compile o CLEAN
 python build.py install
 ```
 
-Clone o repositório ESM e crie a pasta data/esm_data
+Clone o repositório ESM e crie o diretório '**data/esm_data**'
 ```bash
 git clone https://github.com/facebookresearch/esm.git
 mkdir data/esm_data
 ```
 
 Preparando seus dados
-Mova seu arquivo fasta (ex.: query.fasta) para a pasta 'data/inputs'.
+Mova seu arquivo fasta ('**gh32.fasta**') para a pasta 'data/inputs'.
 
 Exemplo:
 
@@ -85,12 +85,12 @@ MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVGA
 MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPK
 ```
 
-Execute a predição na pasta CLEAN/app
+Execute a predição na pasta CLEAN/app/
 ```bash
 python CLEAN_infer_fasta.py --fasta_data query
 ```
 
-Os resultados estarão na pasta 'results' em formato CSV
+Os resultados estarão na pasta '**results**' em formato CSV
 ```bash
 results/query_maxsep.csv
 ```
@@ -102,9 +102,9 @@ conda deactivate
 
 ### Alteração e inclusão do EC number na collection 'protein_entries'
 
-Os resultados gerados pelo CLEAN serão lidos ('gh32_maxsep.csv') 
+Os resultados gerados pelo CLEAN serão lidos ('**gh32_maxsep.csv**') 
 e cada EC será alterado ou adiocionado de acordo com a sua respectiva 
-entrada ('entry').
+entrada ('**entry**').
 
 Execute
 
@@ -112,5 +112,5 @@ Execute
 python ec_clean.py
 ```
 
-Um arquivo de saída ('gh32_maxsep_clean.csv') será criado contendo 
+Um arquivo de saída ('**gh32_maxsep_clean.csv**') será criado contendo 
 os dados limpos.
