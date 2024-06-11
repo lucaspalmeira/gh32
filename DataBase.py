@@ -198,6 +198,20 @@ class MongoDB:
             return TaxonEntry(**valid_arguments)
         return None
 
+    def update_ec_number(self, dataframe):
+
+        for index, row in dataframe.iterrows():
+            entry = row['entry']
+            new_ec_number = row['ec_number']
+
+            document = self.protein_collection.find_one({"entry": entry})
+
+            if document:
+                self.protein_collection.update_one(
+                    {"_id": document["_id"]},
+                    {"$set": {"ec_number": new_ec_number}}
+                )
+
     def close_connection(self):
         if self.client:
             self.client.close()
