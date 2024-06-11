@@ -1,21 +1,29 @@
-### MongoDB
+### Using GH32
+
+Clone o repositório
+```bash
+git clone https://github.com/lucaspalmeira/gh32.git
+```
+
+Crie o ambiente
+
+```bash
+conda create -n GH32 python==3.11.9 -y
+conda activate GH32
+```
+
+Instale as bibliotecas
+```bash
+pip install -r requirements.txt
+```
 
 Start MongoDB
 ```bash
 sudo systemctl start mongod
 ```
 
-Verify that MongoDB has started successfully
-```bash
-sudo systemctl status mongod
-```
+Criar banco de dados de inulinases fúngicas
 
-Stop MongoDB
-```bash
-sudo systemctl stop mongod
-```
-
-### Criar banco de dados de inulinases fúngicas
 Execute
 ```bash
 python create_db.py
