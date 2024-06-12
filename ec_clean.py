@@ -52,12 +52,6 @@ def find_name_enzyme(ec):
     return enzyme_names.get(ec, 'Not in Glycoside Hydrolase Family 32')
 
 
-def remove_enzymes_not_in_gh32(db, valid_entries):
-    for collection_name in db.collections_to_filter:
-        collection = db.db[collection_name]
-        collection.delete_many({'entry': {'$nin': valid_entries}})
-
-
 def process(file):
     data_ec = []
 
@@ -77,7 +71,7 @@ def process(file):
             else:
                 enzyme_count[NAME] = 1
 
-    return [data_ec, enzyme_count]
+    return data_ec, enzyme_count
 
 
 def main():
@@ -93,11 +87,9 @@ def main():
     # adição dos dados preditivos de EC
     db.update_ec_number(df)
 
-    valid_entries = df['entry'].tolist()
-
     # remoção de entradas de sequêncais que não pertecem a GH32
-    remove_enzymes_not_in_gh32(db, valid_entries)
-
+    removed_entries = df[df['enzyme_name'] == 'Not in Glycoside Hydrolase Family 32']['entry'].tolist()
+    db.remove_enzymes_not_in_gh32(removed_entries)
     db.close_connection()
 
     enzyme_df = pd.DataFrame(list(enzyme_count.items()),
