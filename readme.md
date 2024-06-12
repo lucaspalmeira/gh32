@@ -28,6 +28,17 @@ Execute
 python create_db.py
 ```
 
+### Backup do banco
+
+Para realizar o backup do banco GH32, execute:
+```bash
+mongodump --db gh32 --out /gh32/backup/
+```
+
+Para restaura o banco de dados GH32, execute:
+```bash
+mongorestore --db gh32 /gh32/backup/
+```
 
 ### Calcular número de comissão enzimática (EC number) com o CLEAN
 
