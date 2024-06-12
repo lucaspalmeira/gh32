@@ -303,6 +303,8 @@ def fasta_to_dict(list_seqs):
 
     for record in list_seqs:
         entry = f'{record.id}'
+        entry = entry.split('|')
+        entry = entry[1]
         fasta_seq = str(record.seq)
         seqs_data = {'entry': entry, 'seq': fasta_seq}
         seqs_list.append(seqs_data)
@@ -419,7 +421,7 @@ if __name__ == "__main__":
             protein = ProteinEntry(**data_dict)
             db.insert_data(protein)
 
-        list_taxon = get_taxon(data, 'lspalmeira@gmail.com')
+        list_taxon = get_taxon(data, 'lspalmeira.bio@gmail.com')
 
         for dict_taxon in list_taxon:
             taxon = TaxonEntry(**dict_taxon)
