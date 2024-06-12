@@ -212,6 +212,13 @@ class MongoDB:
                     {"$set": {"ec_number": new_ec_number}}
                 )
 
+    def remove_enzymes_not_in_gh32(self, entries):
+        for collection_name in self.collections_to_filter:
+            collection = self.db[collection_name]
+            result = collection.delete_many({'entry': {'$in': entries}})
+            print(f'Removed {result.deleted_count} documents '
+                  f'from {collection_name}.')
+
     def close_connection(self):
         if self.client:
             self.client.close()
