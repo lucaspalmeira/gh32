@@ -1,37 +1,51 @@
-import matplotlib.pyplot as plt
-from Bio import SeqIO
+import pymongo
+import plotly.express as px
+import pandas as pd
 
-"""
-Histograma para verificar a presença de sequências que possívelmente são 
-outliers devido ao seu comprimento.
-"""
+def verify_outliers():
+    """
+    Histograma para verificar a presença de sequências que possivelmente são
+    outliers devido ao seu comprimento.
+    """
 
-# lista que contém cada uma das sequências
-list_seqs = [record.seq for record in SeqIO.parse('gh32.fasta',
-                                                  'fasta')]
+    # Conectar ao MongoDB
+    client = pymongo.MongoClient("mongodb://localhost:27017/")
+    db = client["gh32"]  # Substitua pelo nome do seu banco de dados
+    collection = db["seqs_entries"]
 
-# lista que contém o comprimento de aminoácidos de cada uma das sequências
-length_seqs = [len(seq) for seq in list_seqs]
+    # Buscar todas as sequências da coleção
+    sequences = collection.find({}, {"seq": 1, "entry": 1, "_id": 0})
 
-plt.figure(figsize=(20, 10))
+    # Lista que contém o comprimento de aminoácidos de cada uma das sequências
+    length_seqs = [(record["entry"], len(record["seq"])) for record in sequences]
 
-# 'bins' é o número de intervalos (3000 intervalos)
-hist_vals = plt.hist(length_seqs, bins=3000, color='skyblue',
-                     edgecolor='black', linewidth=0.5)
+    # Criar um DataFrame para facilitar a plotagem com Plotly
+    df = pd.DataFrame(length_seqs, columns=['Entry', 'Sequence Length'])
 
-plt.title('Sequence Lengths for 3148 Protein Sequences')
-plt.xlabel('Length of sequences')
-plt.ylabel('Number of sequences')
+    # Criar o histograma com Plotly
+    fig = px.histogram(df, x='Sequence Length', nbins=3000,
+                       title='Sequence Lengths for Protein Sequences',
+                       labels={'Sequence Length': 'Length of sequences'},
+                       template='plotly_white')
 
-# marcadores a cada 100 unidades ao longo do eixo x
-# criando assim intervalos de 100 em 100
-plt.xticks(range(0, max(length_seqs) + 100, 100), fontsize=7)
+    # Atualizar o layout do gráfico
+    fig.update_layout(
+        xaxis=dict(
+            tickmode='linear',
+            tick0=0,
+            dtick=100,
+            title='Length of sequences'
+        ),
+        yaxis=dict(
+            title='Number of sequences'
+        ),
+        bargap=0.2,
+        bargroupgap=0.1
+    )
 
-# hist_vals[0] contém as alturas das barras do histograma
-# ou seja, o número de sequências em cada intervalo
-max_y = int(max(hist_vals[0]))
-plt.yticks(range(0, max_y, 5), fontsize=7)
+    # Mostrar o gráfico
+    fig.show()
+    fig.write_image("sequence_lengths_histogram.png")
 
-# linhas de grade apenas para o eixo y
-plt.grid(axis='y')
-plt.show()
+# Chamar a função
+verify_outliers()
