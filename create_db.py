@@ -427,12 +427,6 @@ if __name__ == "__main__":
             protein = ProteinEntry(**data_dict)
             db.insert_data(protein)
 
-        list_taxon = get_taxon(data, 'lspalmeira.bio@gmail.com')
-
-        for dict_taxon in list_taxon:
-            taxon = TaxonEntry(**dict_taxon)
-            db.insert_taxon_data(taxon)
-
         fasta_file = get_uniprot_fasta(job_id)
 
         if fasta_file:
@@ -453,6 +447,13 @@ if __name__ == "__main__":
         else:
             print("Falha ao obter dados em formato FASTA.")
             sys.exit(1)
+
+        list_taxon = get_taxon(data, 'lspalmeira.bio@gmail.com')
+
+        for dict_taxon in list_taxon:
+            taxon = TaxonEntry(**dict_taxon)
+            db.insert_taxon_data(taxon)
+
     else:
         print("Falha ao enviar solicitação.")
         sys.exit(1)
