@@ -142,6 +142,14 @@ class MongoDB:
         except pymongo.errors.ConnectionFailure:
             print('Failed to connect to MongoDB')
 
+    def get_entries(self):
+        entries = []
+        collection = self.protein_collection
+        values = collection.find({}, {'entry': 1, '_id': 0})
+        for dic in values:
+            entries.append(dic['entry'])
+        return entries
+
     def insert_data(self, protein):
         entry_data = protein.to_dict()
         insertion_result = self.protein_collection.insert_one(entry_data)
