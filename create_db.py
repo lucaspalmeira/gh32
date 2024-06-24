@@ -454,6 +454,8 @@ if __name__ == "__main__":
             taxon = TaxonEntry(**dict_taxon)
             db.insert_taxon_data(taxon)
 
+        print('Dados taxonômicos extraídos.')
+
     else:
         print("Falha ao enviar solicitação.")
         sys.exit(1)
