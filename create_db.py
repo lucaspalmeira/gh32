@@ -127,7 +127,7 @@ def gh32_interpro():
 
 
 def update_db(ids_interpro, ids_in_db):
-    new_ids = set(ids_interpro) - set(ids_in_db)
+    new_ids = set(ids_in_db) - set(ids_interpro)
     new_ids = list(new_ids)
     return new_ids
 
