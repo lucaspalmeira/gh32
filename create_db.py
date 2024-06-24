@@ -126,7 +126,7 @@ def gh32_interpro():
     return accession
 
 
-def update(ids_interpro, ids_in_db):
+def update_db(ids_interpro, ids_in_db):
     new_ids = set(ids_in_db) - set(ids_interpro)
     new_ids = list(new_ids)
     return new_ids
@@ -403,14 +403,20 @@ def get_taxon(df, email):
 
 
 if __name__ == "__main__":
-    entries = gh32_interpro()
-    ids = list(entries)
-    from_db = "UniProtKB_AC-ID"
-    to_db = "UniProtKB"
-    job_id = submit_id_mapping_job(ids, from_db, to_db)
-
     db = MongoDB()
     db.connect_to_mongodb()
+
+    new_entries = gh32_interpro()
+    new_entries = list(new_entries)
+
+    entries_database = db.get_entries()
+
+    list_ids_uniprot = update_db(new_entries,entries_database)
+
+    from_db = "UniProtKB_AC-ID"
+    to_db = "UniProtKB"
+    job_id = submit_id_mapping_job(list_ids_uniprot, from_db, to_db)
+
 
     if job_id:
         print(f"Solicitação enviada com sucesso. jobId: {job_id}")
