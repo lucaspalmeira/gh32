@@ -142,6 +142,10 @@ class MongoDB:
         except pymongo.errors.ConnectionFailure:
             print('Failed to connect to MongoDB')
 
+    def db_exists(self):
+        list_db = self.client.list_database_names()
+        return list_db
+
     def get_entries(self):
         entries = []
         collection = self.protein_collection
