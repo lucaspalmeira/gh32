@@ -406,17 +406,21 @@ if __name__ == "__main__":
     db = MongoDB()
     db.connect_to_mongodb()
 
-    new_entries = gh32_interpro()
-    new_entries = list(new_entries)
-
-    entries_database = db.get_entries()
-
-    list_ids_uniprot = update_db(new_entries,entries_database)
-
     from_db = "UniProtKB_AC-ID"
     to_db = "UniProtKB"
-    job_id = submit_id_mapping_job(list_ids_uniprot, from_db, to_db)
 
+    if 'gh32' in db.db_exists():
+
+        entries_iterpro = gh32_interpro()
+        entries_iterpro = list(entries_iterpro)
+        entries_database = db.get_entries()
+        list_ids_uniprot = update_db(entries_iterpro, entries_database)
+        job_id = submit_id_mapping_job(list_ids_uniprot, from_db, to_db)
+
+    else:
+        entries_iterpro = gh32_interpro()
+        entries_iterpro = list(entries_iterpro)
+        job_id = submit_id_mapping_job(entries_iterpro, from_db, to_db)
 
     if job_id:
         print(f"Solicitação enviada com sucesso. jobId: {job_id}")
