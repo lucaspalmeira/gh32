@@ -139,6 +139,7 @@ def submit_id_mapping_job(ids, from_db, to_db):
         'from': from_db,
         'to': to_db
     }
+    print(data)
     response = requests.post(url, data=data)
     if response.status_code == 200:
         response_data = response.json()
@@ -167,6 +168,7 @@ def extract_id_mapping_results(job_id):
     }
 
     url = f"{tsv_base_url}/{job_id}"
+    print(url)
     response = requests.get(url, params=params)
     if response.status_code == 200:
         data = response.text
@@ -402,36 +404,18 @@ def get_taxon(df, email):
     return list_dict
 
 
-if __name__ == "__main__":
-    db = MongoDB()
-    db.connect_to_mongodb()
-
-    from_db = "UniProtKB_AC-ID"
-    to_db = "UniProtKB"
-
-    if 'gh32' in db.db_exists():
-
-        entries_iterpro = gh32_interpro()
-        entries_iterpro = list(entries_iterpro)
-        entries_database = db.get_entries()
-        list_ids_uniprot = update_db(entries_iterpro, entries_database)
-        job_id = submit_id_mapping_job(list_ids_uniprot, from_db, to_db)
-
-    else:
-        entries_iterpro = gh32_interpro()
-        entries_iterpro = list(entries_iterpro)
-        job_id = submit_id_mapping_job(entries_iterpro, from_db, to_db)
-
-    if job_id:
-        print(f"Solicitação enviada com sucesso. jobId: {job_id}")
-        data = extract_id_mapping_results(job_id)
+def main(job, db):
+    if job:
+        print(f"Solicitação enviada com sucesso. jobId: {job}")
+        data = extract_id_mapping_results(job)
+        print(data)
         list_dict = csv_to_dict(data)
 
         for data_dict in list_dict:
             protein = ProteinEntry(**data_dict)
             db.insert_data(protein)
 
-        fasta_file = get_uniprot_fasta(job_id)
+        fasta_file = get_uniprot_fasta(job)
 
         if fasta_file:
             list_seqs = list(SeqIO.parse(fasta_file, "fasta"))
@@ -463,3 +447,34 @@ if __name__ == "__main__":
     else:
         print("Falha ao enviar solicitação.")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    db = MongoDB()
+    db.connect_to_mongodb()
+
+    from_db = "UniProtKB_AC-ID"
+    to_db = "UniProtKB"
+
+    if 'gh32' in db.db_exists():
+
+        entries_interpro = gh32_interpro()
+
+        entries_interpro = list(entries_interpro)
+
+        entries_db = db.get_entries()
+
+        new_entries = update_db(entries_interpro, entries_db)
+
+        job_id = submit_id_mapping_job(new_entries, from_db, to_db)
+
+        main(job_id, db)
+
+    else:
+        entries_interpro = gh32_interpro()
+        entries_interpro = list(entries_interpro)
+        job_id = submit_id_mapping_job(entries_interpro, from_db, to_db)
+
+        main(job_id, db)
+
+    db.close_connection()
