@@ -139,7 +139,6 @@ def submit_id_mapping_job(ids, from_db, to_db):
         'from': from_db,
         'to': to_db
     }
-    print(data)
     response = requests.post(url, data=data)
     if response.status_code == 200:
         response_data = response.json()
@@ -168,7 +167,6 @@ def extract_id_mapping_results(job_id):
     }
 
     url = f"{tsv_base_url}/{job_id}"
-    print(url)
     response = requests.get(url, params=params)
     if response.status_code == 200:
         data = response.text
@@ -404,18 +402,17 @@ def get_taxon(df, email):
     return list_dict
 
 
-def main(job, db):
-    if job:
-        print(f"Solicitação enviada com sucesso. jobId: {job}")
-        data = extract_id_mapping_results(job)
-        print(data)
+def main(job_id, db):
+    if job_id:
+        print(f"Solicitação enviada com sucesso. JobID: {job_id}")
+        data = extract_id_mapping_results(job_id)
         list_dict = csv_to_dict(data)
 
         for data_dict in list_dict:
             protein = ProteinEntry(**data_dict)
             db.insert_data(protein)
 
-        fasta_file = get_uniprot_fasta(job)
+        fasta_file = get_uniprot_fasta(job_id)
 
         if fasta_file:
             list_seqs = list(SeqIO.parse(fasta_file, "fasta"))
@@ -432,6 +429,8 @@ def main(job, db):
                 desc_entry = DescEntry(**desc_calc)
                 db.insert_desc_data(desc_entry)
 
+            print('Descritores físico-químicos calculados.')
+
         else:
             print("Falha ao obter dados em formato FASTA.")
             sys.exit(1)
@@ -446,7 +445,6 @@ def main(job, db):
 
     else:
         print("Falha ao enviar solicitação.")
-        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -466,11 +464,29 @@ if __name__ == "__main__":
 
         new_entries = update_db(entries_interpro, entries_db)
 
-        job_id = submit_id_mapping_job(new_entries, from_db, to_db)
+        if not new_entries:
 
-        main(job_id, db)
+            print('O banco GH32 já existe, mas não há nenhuma '
+                  'atualização a ser feita.')
+
+            print('Lista vazia: new_entries ==', new_entries)
+
+            sys.exit(1)
+
+        else:
+
+            print(f'O banco de dados GH32 existe e {len(new_entries)} novas '
+                  f'entradas Uniprot serão adicionadas ao banco.')
+
+            job_id = submit_id_mapping_job(new_entries, from_db, to_db)
+
+            main(job_id, db)
+
+            sys.exit(1)
 
     else:
+        print('O banco de dados GH32 será criado...')
+
         entries_interpro = gh32_interpro()
         entries_interpro = list(entries_interpro)
         job_id = submit_id_mapping_job(entries_interpro, from_db, to_db)
@@ -478,3 +494,5 @@ if __name__ == "__main__":
         main(job_id, db)
 
     db.close_connection()
+
+    sys.exit(1)
