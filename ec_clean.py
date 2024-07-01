@@ -113,7 +113,7 @@ def main():
 if __name__ == '__main__':
     train_data = 'split100'
     test_data = os.path.join(BASE_DIR, 'data', 'gh32.fasta')
-
+    print(test_data)
     # Converting fasta to dummy csv file, will delete after inference
     prepare_infer_fasta(test_data)
 
