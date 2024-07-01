@@ -112,7 +112,7 @@ def main():
 
 if __name__ == '__main__':
     train_data = 'split100'
-    test_data = os.path.join(BASE_DIR, 'data', 'gh32')
+    test_data = 'inputs/' + 'gh32'
     print(test_data)
     # Converting fasta to dummy csv file, will delete after inference
     prepare_infer_fasta(test_data)
@@ -124,5 +124,5 @@ if __name__ == '__main__':
                                   'gmm_ensumble.pkl'))
 
     # Removing dummy csv file
-    os.remove(os.path.join(BASE_DIR, "data", 'gh32' + '.csv'))
+    os.remove("data/"+ test_data +'.csv')
     main()
