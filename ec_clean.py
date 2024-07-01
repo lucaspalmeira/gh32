@@ -1,6 +1,12 @@
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
+import sys
+import os
+BASE_DIR = os.path.expanduser('~/CLEAN/app')
+sys.path.append(os.path.join(BASE_DIR, 'src'))
+from CLEAN.utils import *
+from CLEAN.infer import infer_maxsep
 
 
 # extrair o EC number
@@ -105,4 +111,18 @@ def main():
 
 
 if __name__ == '__main__':
+    train_data = 'split100'
+    test_data = os.path.join(BASE_DIR, 'data', 'gh32.fasta')
+
+    # Converting fasta to dummy csv file, will delete after inference
+    prepare_infer_fasta(test_data)
+
+    # Inferred results is in
+    # results/[args.fasta_data].csv
+    infer_maxsep(train_data, test_data, report_metrics=False, pretrained=True,
+                 gmm=os.path.join(BASE_DIR, 'data', 'pretrained',
+                                  'gmm_ensumble.pkl'))
+
+    # Removing dummy csv file
+    os.remove(os.path.join(BASE_DIR, "data", 'gh32' + '.csv'))
     main()
