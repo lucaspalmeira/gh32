@@ -85,10 +85,12 @@ def process(file):
 
 def main():
 
-    data_ec, enzyme_count = process('gh32_maxsep.csv')
+    data_ec, enzyme_count = process(os.path.join(PATH_CLEAN,
+                                                 'results', 'inputs',
+                                                 'gh32_maxsep.csv'))
 
     df = pd.DataFrame(data_ec)
-    df.to_csv('gh32_maxsep_clean.csv', index=False)
+    df.to_csv(os.path.join(BASE_DIR, 'gh32_maxsep_clean.csv'), index=False)
 
     db = MongoDB()
     db.connect_to_mongodb()
@@ -110,21 +112,21 @@ def main():
 
     fig.update_traces(textinfo='percent+value')
 
-    fig.write_image('distribuicao_enzimas_gh32.png')
+    fig.write_image(os.path.join(BASE_DIR, 'distribuicao_enzimas_gh32.png'))
 
 
 if __name__ == '__main__':
     train_data = 'split100'
     test_data =  'gh32'
     # Converting fasta to dummy csv file, will delete after inference
-    prepare_infer_fasta(test_data)
+    prepare_infer_fasta(os.path.join(BASE_DIR, test_data))
 
     # Inferred results is in
     # results/[args.fasta_data].csv
     infer_maxsep(train_data, test_data, report_metrics=False, pretrained=True,
-                 gmm=os.path.join(BASE_DIR, 'data', 'pretrained',
+                 gmm=os.path.join(PATH_CLEAN, 'data', 'pretrained',
                                   'gmm_ensumble.pkl'))
 
     # Removing dummy csv file
-    os.remove("data/"+ test_data +'.csv')
+    os.remove(os.path.join(PATH_CLEAN, 'data', test_data, '.csv'))
     main()
