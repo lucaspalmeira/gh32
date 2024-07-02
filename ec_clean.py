@@ -4,6 +4,7 @@ from DataBase import MongoDB
 import sys
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+path_clean = BASE_DIR + '/CLEAN/app/'
 sys.path.append(os.path.join(BASE_DIR, 'src'))
 print(BASE_DIR)
 from CLEAN.utils import *
