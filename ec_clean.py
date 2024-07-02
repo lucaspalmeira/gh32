@@ -3,8 +3,9 @@ import plotly.express as px
 from DataBase import MongoDB
 import sys
 import os
-BASE_DIR = os.path.expanduser('~/CLEAN/app')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_DIR, 'src'))
+print(BASE_DIR)
 from CLEAN.utils import *
 from CLEAN.infer import infer_maxsep
 
@@ -112,8 +113,7 @@ def main():
 
 if __name__ == '__main__':
     train_data = 'split100'
-    test_data = 'inputs/' + 'gh32'
-    print(test_data)
+    test_data =  'gh32'
     # Converting fasta to dummy csv file, will delete after inference
     prepare_infer_fasta(test_data)
 
