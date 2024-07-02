@@ -7,6 +7,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH_CLEAN = BASE_DIR + '/CLEAN/app/'
 sys.path.append(os.path.join(PATH_CLEAN, 'src'))
 print(BASE_DIR)
+print(PATH_CLEAN)
 from CLEAN.utils import *
 from CLEAN.infer import infer_maxsep
 
