@@ -119,7 +119,7 @@ if __name__ == '__main__':
     train_data = 'split100'
     test_data =  'gh32'
     # Converting fasta to dummy csv file, will delete after inference
-    prepare_infer_fasta(os.path.join(BASE_DIR, test_data))
+    prepare_infer_fasta(test_data)
 
     # Inferred results is in
     # results/[args.fasta_data].csv
