@@ -28,6 +28,7 @@ def main():
 
 
 if __name__ == '__main__':
+    copy_fasta()
     main()
 
 """
