@@ -6,6 +6,23 @@ from CLEAN.utils import *
 from CLEAN.infer import infer_maxsep
 
 
+def main():
+    train_data = 'split100'
+    test_data = 'inputs/gh32'
+    # converting fasta to dummy csv file, will delete after inference
+    # esm embedding are taken care of
+    prepare_infer_fasta(test_data)
+    # inferred results is in
+    # results/[args.fasta_data].csv
+    infer_maxsep(train_data, test_data, report_metrics=False, pretrained=True,
+                 gmm='./data/pretrained/gmm_ensumble.pkl')
+    # removing dummy csv file
+    os.remove("data/" + test_data + '.csv')
+
+
+if __name__ == '__main__':
+    main()
+
 """
 import pandas as pd
 import plotly.express as px
