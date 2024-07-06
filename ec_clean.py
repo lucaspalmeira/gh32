@@ -15,7 +15,8 @@ def copy_fasta():
 
 def main():
     train_data = 'split100'
-    test_data = 'inputs/gh32'
+    test_data = os.path.join('CLEAN', 'app', 'data',
+                             'inputs', 'gh32')
     # converting fasta to dummy csv file, will delete after inference
     # esm embedding are taken care of
     prepare_infer_fasta(test_data)
