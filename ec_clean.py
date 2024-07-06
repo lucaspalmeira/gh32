@@ -1,3 +1,12 @@
+import argparse
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
+from CLEAN.utils import *
+from CLEAN.infer import infer_maxsep
+
+
+"""
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
@@ -106,3 +115,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+"""
