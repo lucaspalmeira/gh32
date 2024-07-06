@@ -15,17 +15,18 @@ def copy_fasta():
 
 def main():
     train_data = 'split100'
-    test_data = os.path.join('CLEAN', 'app', 'data',
+    fasta_name_csv = 'gh32'
+    fasta_name_path = os.path.join('CLEAN', 'app', 'data',
                              'inputs', 'gh32')
     # converting fasta to dummy csv file, will delete after inference
     # esm embedding are taken care of
-    prepare_infer_fasta(test_data)
+    prepare_infer_fasta(fasta_name_path, fasta_name_csv)
     # inferred results is in
     # results/[args.fasta_data].csv
-    infer_maxsep(train_data, test_data, report_metrics=False, pretrained=True,
+    infer_maxsep(train_data, fasta_name_path, report_metrics=False, pretrained=True,
                  gmm='./data/pretrained/gmm_ensumble.pkl')
     # removing dummy csv file
-    os.remove("data/" + test_data + '.csv')
+    os.remove("data/" + fasta_name_csv + '.csv')
 
 
 if __name__ == '__main__':
