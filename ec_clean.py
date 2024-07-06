@@ -1,10 +1,17 @@
-import argparse
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 from CLEAN.utils import *
 from CLEAN.infer import infer_maxsep
 
+
+def copy_fasta():
+    with open('gh32.fasta', 'r') as file1:
+        lines = file1.readlines()
+        path_fasta = os.path.join('CLEAN', 'app', 'data',
+                                  'inputs', 'gh32.fasta')
+        with open(path_fasta, 'w') as file2:
+            file2.writelines(lines)
 
 def main():
     train_data = 'split100'
