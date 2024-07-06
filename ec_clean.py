@@ -1,16 +1,6 @@
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
-import sys
-import os
-os.environ["MKL_THREADING_LAYER"] = "GNU"
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PATH_CLEAN = os.path.join(BASE_DIR, 'CLEAN', 'app')
-sys.path.append(os.path.join(PATH_CLEAN, 'src'))
-print(BASE_DIR)
-print(PATH_CLEAN)
-from CLEAN.utils import *
-from CLEAN.infer import infer_maxsep
 
 
 # extrair o EC number
@@ -86,12 +76,10 @@ def process(file):
 
 def main():
 
-    data_ec, enzyme_count = process(os.path.join(PATH_CLEAN,
-                                                 'results', 'inputs',
-                                                 'gh32_maxsep.csv'))
+    data_ec, enzyme_count = process('gh32_maxsep.csv')
 
     df = pd.DataFrame(data_ec)
-    df.to_csv(os.path.join(BASE_DIR, 'gh32_maxsep_clean.csv'), index=False)
+    df.to_csv('gh32_maxsep_clean.csv', index=False)
 
     db = MongoDB()
     db.connect_to_mongodb()
@@ -113,21 +101,8 @@ def main():
 
     fig.update_traces(textinfo='percent+value')
 
-    fig.write_image(os.path.join(BASE_DIR, 'distribuicao_enzimas_gh32.png'))
+    fig.write_image('distribuicao_enzimas_gh32.png')
 
 
 if __name__ == '__main__':
-    train_data = 'split100'
-    test_data =  'gh32'
-    # Converting fasta to dummy csv file, will delete after inference
-    prepare_infer_fasta(test_data)
-
-    # Inferred results is in
-    # results/[args.fasta_data].csv
-    infer_maxsep(train_data, test_data, report_metrics=False, pretrained=True,
-                 gmm=os.path.join(PATH_CLEAN, 'data', 'pretrained',
-                                  'gmm_ensumble.pkl'))
-
-    # Removing dummy csv file
-    os.remove(os.path.join(PATH_CLEAN, 'data', test_data, '.csv'))
     main()
