@@ -5,7 +5,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              'CLEAN', 'app')))
-from CLEAN.app import CLEAN_infer_fasta
+import CLEAN_infer_fasta
 
 def copy_fasta():
     with open('gh32.fasta', 'r') as file1:
