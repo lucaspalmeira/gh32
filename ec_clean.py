@@ -1,11 +1,11 @@
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
+import subprocess
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             'CLEAN', 'app')))
-import CLEAN_infer_fasta
+
+
 
 def copy_fasta():
     with open('gh32.fasta', 'r') as file1:
@@ -121,5 +121,6 @@ def main():
 
 if __name__ == '__main__':
     copy_fasta()
-    os.system('python CLEAN_infer_fasta.py --fasta_data gh32')
+    subprocess.run(['python', '/CLEAN/app/CLEAN_infer_fasta.py',
+                    '--fasta_data', 'gh32'])
     main()
