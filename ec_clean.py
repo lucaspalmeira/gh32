@@ -121,5 +121,5 @@ def main():
 
 if __name__ == '__main__':
     copy_fasta()
-    CLEAN_infer_fasta.main()
+    CLEAN_infer_fasta.main(['--fasta_data', 'gh32.fasta'])
     main()
