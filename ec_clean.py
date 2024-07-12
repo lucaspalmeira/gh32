@@ -1,9 +1,8 @@
-import sys
+import pandas as pd
+import plotly.express as px
+from DataBase import MongoDB
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
-from CLEAN.utils import *
-from CLEAN.infer import infer_maxsep
-
+from CLEAN.app import CLEAN_infer_fasta
 
 def copy_fasta():
     with open('gh32.fasta', 'r') as file1:
@@ -12,31 +11,6 @@ def copy_fasta():
                                   'inputs', 'gh32.fasta')
         with open(path_fasta, 'w') as file2:
             file2.writelines(lines)
-
-def main():
-    train_data = 'split100'
-    fasta_name_csv = 'gh32'
-    fasta_name_path = os.path.join('CLEAN', 'app', 'data',
-                             'inputs', 'gh32')
-    # converting fasta to dummy csv file, will delete after inference
-    # esm embedding are taken care of
-    prepare_infer_fasta(fasta_name_path, fasta_name_csv)
-    # inferred results is in
-    # results/[args.fasta_data].csv
-    infer_maxsep(train_data, fasta_name_path, report_metrics=False, pretrained=True,
-                 gmm='./data/pretrained/gmm_ensumble.pkl')
-    # removing dummy csv file
-    os.remove("data/" + fasta_name_csv + '.csv')
-
-
-if __name__ == '__main__':
-    copy_fasta()
-    main()
-
-"""
-import pandas as pd
-import plotly.express as px
-from DataBase import MongoDB
 
 
 # extrair o EC number
@@ -141,5 +115,6 @@ def main():
 
 
 if __name__ == '__main__':
+    copy_fasta()
+    CLEAN_infer_fasta.main()
     main()
-"""
