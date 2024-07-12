@@ -6,7 +6,6 @@ import sys
 import os
 
 
-
 def copy_fasta():
     with open('gh32.fasta', 'r') as file1:
         lines = file1.readlines()
@@ -121,6 +120,8 @@ def main():
 
 if __name__ == '__main__':
     copy_fasta()
-    subprocess.run(['python', '/CLEAN/app/CLEAN_infer_fasta.py',
+    path_clean_infer_fasta = os.path.join(os.getcwd(), 'CLEAN',
+                                          'app', 'CLEAN_infer_fasta.py')
+    subprocess.run(['python', path_clean_infer_fasta,
                     '--fasta_data', 'gh32'])
     main()
