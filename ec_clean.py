@@ -1,7 +1,10 @@
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                             'CLEAN', 'app')))
 from CLEAN.app import CLEAN_infer_fasta
 
 def copy_fasta():
@@ -98,7 +101,9 @@ def main():
     db.update_ec_number(df)
 
     # remoção de entradas de sequêncais que não pertecem a GH32
-    removed_entries = df[df['enzyme_name'] == 'Not in Glycoside Hydrolase Family 32']['entry'].tolist()
+    removed_entries = df[df['enzyme_name'] == ('Not in '
+                                               'Glycoside Hydrolase '
+                                               'Family 32')]['entry'].tolist()
     db.remove_enzymes_not_in_gh32(removed_entries)
     db.close_connection()
 
