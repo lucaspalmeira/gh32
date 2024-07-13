@@ -122,6 +122,9 @@ if __name__ == '__main__':
     copy_fasta()
     path_clean_infer_fasta = os.path.join(os.getcwd(), 'CLEAN',
                                           'app', 'CLEAN_infer_fasta.py')
+
+    os.environ['MKL_THREADING_LAYER'] = 'GNU'
+
     subprocess.run(['python', path_clean_infer_fasta,
                     '--fasta_data', 'gh32'])
     main()
