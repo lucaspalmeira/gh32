@@ -130,4 +130,5 @@ if __name__ == '__main__':
 
     subprocess.run(['python', path_clean_infer_fasta,
                     '--fasta_data', 'gh32'])
+
     main()
