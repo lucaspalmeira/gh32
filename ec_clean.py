@@ -10,7 +10,7 @@ def copy_fasta():
     with open('gh32.fasta', 'r') as file1:
         lines = file1.readlines()
 
-        path_fasta = os.path.join('home', 'ubuntu', 'lucas',
+        path_fasta = os.path.join('/home', 'ubuntu', 'lucas',
                                   'CLEAN', 'app', 'data',
                                   'inputs', 'gh32.fasta')
 
@@ -123,7 +123,7 @@ def main():
 
 if __name__ == '__main__':
     copy_fasta()
-    path_clean_infer_fasta = os.path.join('home', 'ubuntu', 'lucas', 'CLEAN',
+    path_clean_infer_fasta = os.path.join('/home', 'ubuntu', 'lucas', 'CLEAN',
                                           'app', 'CLEAN_infer_fasta.py')
 
     os.environ['MKL_THREADING_LAYER'] = 'GNU'
