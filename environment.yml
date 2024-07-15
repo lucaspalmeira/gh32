@@ -1,6 +1,7 @@
 name: GH32
 channels:
   - defaults
+  - pytorch
 dependencies:
   - python=3.11
   - pandas=2.2.1
@@ -9,3 +10,9 @@ dependencies:
   - biopython=1.78
   - urllib3=2.2.1
   - plotly==5.22.0
+  - openssl==3.0.13
+  - numpy==1.26.4
+  - kaleido==0.2.1
+  - pytorch==2.3.1
+  - torchvision==0.18.1
+  - torchaudio==2.3.1
