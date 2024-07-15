@@ -32,7 +32,7 @@ mkdir data/esm_data
 
 Crie o repositório '**data/pretrained**':
 ```bash
-mkdir data/esm_data
+mkdir data/pretrained
 ```
 
 <p>Faça o Download dos arquivos pré-treinados conforme as instruções de instalação do <a href="https://github.com/tttianhao/CLEAN?tab=readme-ov-file#1-install">CLEAN</a>.</p>
