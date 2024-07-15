@@ -76,7 +76,7 @@ def process(file):
 
 def main():
 
-    data_ec, enzyme_count = process('gh32_maxsep.csv')
+    data_ec, enzyme_count = process('/CLEAN/app/results/inputs/gh32_maxsep.csv')
 
     df = pd.DataFrame(data_ec)
     df.to_csv('gh32_maxsep_clean.csv', index=False)
