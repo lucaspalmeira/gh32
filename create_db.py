@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import requests
 from io import StringIO
@@ -197,6 +199,13 @@ def get_uniprot_fasta(job_id):
             file.write(response.text)
 
         print('Download de sequências realizado.')
+
+        path_fasta_in_CLEAN_app = os.path.join(os.getcwd(),
+                                               'CLEAN', 'app', 'data',
+                                               'inputs', 'gh32.fasta')
+
+        with open(path_fasta_in_CLEAN_app, 'w') as file2:
+            file2.write(response.text)
 
         return 'gh32.fasta'
 
