@@ -197,7 +197,7 @@ def get_uniprot_fasta(job_id):
         with open('gh32.fasta', 'w') as file:
             file.write(response.text)
 
-        print('Download de sequências realizado.')
+        print('Requisição de sequências realizada.')
 
         path_fasta_in_CLEAN_app = os.path.join(os.getcwd(),
                                                'CLEAN', 'app', 'data',
@@ -205,6 +205,8 @@ def get_uniprot_fasta(job_id):
 
         with open(path_fasta_in_CLEAN_app, 'w') as file2:
             file2.write(response.text)
+
+        print(f'gh32.fasta criado com sucesso em: {path_fasta_in_CLEAN_app}.')
 
         return 'gh32.fasta'
 
