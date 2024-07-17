@@ -56,7 +56,7 @@ sudo systemctl start mongod
 ```bash
 bash rungh32.sh
 ```
-or
+ou
 ```bash
 chmod +x rungh32.sh
 ./rungh32.sh
