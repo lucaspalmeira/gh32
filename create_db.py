@@ -61,8 +61,8 @@ def gh32_interpro():
     # disable SSL verification to avoid config issues
     context = ssl._create_unverified_context()
 
-    BASE_URL = ("https://www.ebi.ac.uk:443/interpro/api/protein/UniProt/"
-                "entry/pfam/PF08244/taxonomy/uniprot/4751/?page_size=200")
+    BASE_URL = ('https://www.ebi.ac.uk:443/interpro/api/protein/UniProt/'
+                'entry/InterPro/IPR001362/taxonomy/uniprot/4751/?page_size=200')
 
     next_url = BASE_URL
     last_page = False
