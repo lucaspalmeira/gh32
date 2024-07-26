@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 from DataBase import MongoDB
+import os
 
 
 # extrair o EC number
@@ -76,7 +77,8 @@ def process(file):
 
 def main():
 
-    data_ec, enzyme_count = process('/CLEAN/app/results/inputs/gh32_maxsep.csv')
+    path_maxsep = os.getcwd() + '/CLEAN/app/results/inputs/gh32_maxsep.csv'
+    data_ec, enzyme_count = process(path_maxsep)
 
     df = pd.DataFrame(data_ec)
     df.to_csv('gh32_maxsep_clean.csv', index=False)
