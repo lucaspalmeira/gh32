@@ -1,5 +1,6 @@
 name: GH32
 channels:
+  - conda-forge
   - defaults
   - pytorch
 dependencies:
