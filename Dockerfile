@@ -13,6 +13,7 @@ RUN rm ~/miniconda.sh
 RUN /opt/conda/bin/conda init bash
 RUN /opt/conda/bin/conda env create -f environment.yml
 RUN /opt/conda/bin/conda clean -afy
+RUN pip install kaleido
 
 SHELL ["conda", "run", "-n", "GH32", "/bin/bash", "-c"]
 
