@@ -20,13 +20,17 @@ SHELL ["conda", "run", "-n", "GH32", "/bin/bash", "-c"]
 
 # Install CLEAN
 RUN git clone https://github.com/tttianhao/CLEAN.git
-RUN cd CLEAN/app/
+
+WORKDIR /gh32/CLEAN/app/
+
 RUN git clone https://github.com/facebookresearch/esm.git
 RUN mkdir data/esm_data
 RUN pip install gdown
 RUN gdown --id 1gsxjSf2CtXzgW1XsennTr-TcvSoTSDtk
 RUN unzip pretrained.zip -d data/pretrained
 RUN python build.py install
+
+WORKDIR /gh32
 
 COPY . .
 
