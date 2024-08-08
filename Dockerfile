@@ -11,10 +11,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
 RUN bash ~/miniconda.sh -b -p /opt/conda
 RUN rm ~/miniconda.sh
 RUN /opt/conda/bin/conda init bash
-RUN /opt/conda/bin/conda install -y -c conda-forge mamba
-RUN /opt/conda/bin/mamba env create -f environment.yml
+RUN /opt/conda/bin/conda env create -f environment.yml
 RUN /opt/conda/bin/conda clean -afy
-
 
 SHELL ["conda", "run", "-n", "GH32", "/bin/bash", "-c"]
 
