@@ -127,7 +127,7 @@ class MongoDB:
 
     def connect_to_mongodb(self):
         try:
-            self.client = pymongo.MongoClient('mongodb://localhost:27017/')
+            self.client = pymongo.MongoClient('mongodb://mongodb:27017/')
             self.db = self.client['gh32']
             self.protein_collection = self.db['protein_entries']
             self.seqs_collection = self.db['seqs_entries']
