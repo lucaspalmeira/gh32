@@ -10,6 +10,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 RUN bash ~/miniconda.sh -b -p /opt/conda
 RUN rm ~/miniconda.sh
+ENV PATH="/opt/conda/bin:$PATH"
 RUN /opt/conda/bin/conda init bash
 RUN /opt/conda/bin/conda env create -f environment.yml
 RUN /opt/conda/bin/conda clean -afy
