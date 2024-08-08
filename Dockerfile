@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 WORKDIR /gh32
 
-COPY environment.yml .
+COPY . .
 
 RUN apt-get update
 RUN apt-get install -y wget git unzip
@@ -34,4 +34,4 @@ WORKDIR /gh32
 
 COPY . .
 
-CMD ["bash", "-c", "python create_db.py && cd CLEAN/app/ && python CLEAN_infer_fasta.py --fasta_data gh32 && cd /gh32 && python ec_clean.py"]
+CMD ["conda", "run", "-n", "GH32", "bash", "-c", "python create_db.py && cd CLEAN/app/ && python CLEAN_infer_fasta.py --fasta_data gh32 && cd /gh32 && python ec_clean.py"]
