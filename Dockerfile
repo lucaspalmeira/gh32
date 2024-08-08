@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y wget git unzip \
     && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh \
     && bash ~/miniconda.sh -b -p /opt/conda \
     && rm ~/miniconda.sh \
-    && /opt/conda/bin/conda init \
+    && /opt/conda/bin/conda init bash \
     && /opt/conda/bin/conda install -y -c conda-forge mamba \
     && /opt/conda/bin/mamba env create -f environment.yml \
     && /opt/conda/bin/conda clean -afy
@@ -22,7 +22,7 @@ RUN git clone https://github.com/tttianhao/CLEAN.git \
     && cd CLEAN/app/ \
     && git clone https://github.com/facebookresearch/esm.git \
     && mkdir data/esm_data \
-    && pip3 install gdown \
+    && pip install gdown \
     && gdown --id 1gsxjSf2CtXzgW1XsennTr-TcvSoTSDtk \
     && unzip pretrained.zip -d data/pretrained \
     && python build.py install
