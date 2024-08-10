@@ -32,6 +32,4 @@ RUN python build.py install
 
 WORKDIR /gh32
 
-COPY . .
-
 CMD ["conda", "run", "-n", "GH32", "bash", "-c", "python create_db.py && cd CLEAN/app/ && python CLEAN_infer_fasta.py --fasta_data gh32 && cd /gh32 && python ec_clean.py; tail -f /dev/null"]
