@@ -26,14 +26,14 @@ RUN ls -l /gh32/CLEAN
 WORKDIR /gh32/CLEAN/app/
 
 RUN git clone https://github.com/facebookresearch/esm.git
-RUN PWD
+RUN pwd
 RUN mkdir data/esm_data
 RUN pip install gdown
 RUN gdown --id 1gsxjSf2CtXzgW1XsennTr-TcvSoTSDtk
 RUN unzip pretrained.zip -d data/pretrained
 RUN python build.py install
 
-RUN PWD
+RUN pwd
 RUN ls -l /gh32/CLEAN
 
 WORKDIR /gh32
