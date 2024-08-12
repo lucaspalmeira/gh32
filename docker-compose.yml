@@ -4,7 +4,6 @@ services:
     container_name: GH32
     volumes:
       - .:/gh32
-      - .:/gh32/CLEAN:/gh32/CLEAN
     working_dir: /gh32
     networks:
       - webnet

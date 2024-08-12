@@ -30,6 +30,8 @@ RUN gdown --id 1gsxjSf2CtXzgW1XsennTr-TcvSoTSDtk
 RUN unzip pretrained.zip -d data/pretrained
 RUN python build.py install
 
+RUN ls -l /gh32/CLEAN
+
 WORKDIR /gh32
 
 CMD ["conda", "run", "-n", "GH32", "bash", "-c", "python create_db.py && cd CLEAN/app/ && python CLEAN_infer_fasta.py --fasta_data gh32 && cd /gh32 && python ec_clean.py; tail -f /dev/null"]
