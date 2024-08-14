@@ -4,14 +4,11 @@ services:
     container_name: GH32
     volumes:
       - .:/gh32
-      - ./CLEAN/app/data/inputs:/gh32/CLEAN/app/data/inputs
-      - ./results:/gh32/results
     working_dir: /gh32
     networks:
       - webnet
     depends_on:
       - db
-    command: ["sh", "/gh32/runpipeline.sh"]
 
   db:
     image: mongo:latest

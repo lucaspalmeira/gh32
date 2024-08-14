@@ -77,11 +77,11 @@ def process(file):
 
 def main():
 
-    path_maxsep = '/gh32/results/inputs/gh32_maxsep.csv'
+    path_maxsep = os.getcwd() + '/CLEAN/app/results/inputs/gh32_maxsep.csv'
     data_ec, enzyme_count = process(path_maxsep)
 
     df = pd.DataFrame(data_ec)
-    df.to_csv('/gh32/results/gh32_maxsep_clean.csv', index=False)
+    df.to_csv('gh32_maxsep_clean.csv', index=False)
 
     db = MongoDB()
     db.connect_to_mongodb()
@@ -105,7 +105,7 @@ def main():
 
     fig.update_traces(textinfo='percent+value')
 
-    fig.write_image('/gh32/results/distribuicao_enzimas_gh32.png')
+    fig.write_image('distribuicao_enzimas_gh32.png')
 
 
 if __name__ == '__main__':

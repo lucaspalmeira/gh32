@@ -199,6 +199,10 @@ def get_uniprot_fasta(job_id):
 
         print('Requisição de sequências realizada.')
 
+        path_fasta_in_clean = os.getcwd() + '/CLEAN/app/data/inputs/gh32.fasta'
+        with open(path_fasta_in_clean, 'w') as file:
+            file.write(response.text)
+            print(f'Arquivo {path_fasta_in_clean} criado.')
         return 'gh32.fasta'
 
     except requests.exceptions.RequestException as error:
