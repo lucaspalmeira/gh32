@@ -11,7 +11,6 @@ services:
       - webnet
     depends_on:
       - db
-      - clean
     command: ["sh", "/gh32/runpipeline.sh"]
 
   db:
