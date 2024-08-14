@@ -1,5 +1,5 @@
 services:
-  gh32-pipeline:
+  pipeline:
     build: .
     container_name: GH32
     volumes:
@@ -10,11 +10,11 @@ services:
     networks:
       - webnet
     depends_on:
-      - gh32-db
+      - db
       - clean
     command: ["sh", "/gh32/runpipeline.sh"]
 
-  gh32-db:
+  db:
     image: mongo:latest
     container_name: mongodb
     ports:
