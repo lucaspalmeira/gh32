@@ -1,22 +1,37 @@
 services:
-  pipeline:
+  gh32-pipeline:
     build: .
     container_name: GH32
     volumes:
       - .:/gh32
+      - ./CLEAN/app/data/inputs:/gh32/CLEAN/app/data/inputs
+      - ./results:/gh32/results
     working_dir: /gh32
     networks:
       - webnet
     depends_on:
-      - db
+      - gh32-db
+      - clean
+    command: ["sh", "/gh32/runpipeline.sh"]
 
-  db:
+  gh32-db:
     image: mongo:latest
     container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - webnet
+
+  clean:
+    image: moleculemaker/clean-image-amd64:latest
+    container_name: CLEAN
+    volumes:
+      - ./CLEAN/app:/app
+      - ./CLEAN/app/data/inputs:/app/data/inputs
+      - ./results:/app/results/inputs
+    working_dir: /app
     networks:
       - webnet
 
