@@ -24,17 +24,6 @@ services:
     networks:
       - webnet
 
-  clean:
-    image: moleculemaker/clean-image-amd64:latest
-    container_name: CLEAN
-    volumes:
-      - ./CLEAN/app:/app
-      - ./CLEAN/app/data/inputs:/app/data/inputs
-      - ./results:/app/results/inputs
-    working_dir: /app
-    networks:
-      - webnet
-
 networks:
   webnet:
 
