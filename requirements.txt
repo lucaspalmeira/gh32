@@ -5,6 +5,7 @@ biopython==1.78
 urllib3==2.2.1
 plotly==5.22.0
 numpy==1.26.4
+tqdm==4.66.5
 torch==2.3.1
 torchvision==0.18.1
 torchaudio==2.3.1
