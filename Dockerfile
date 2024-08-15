@@ -10,4 +10,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install kaleido
 
-CMD ["sh", "/gh32/runpipeline.sh"]
+CMD ["./runpipeline.sh"]
