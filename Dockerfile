@@ -12,5 +12,5 @@ RUN pip install kaleido
 
 RUN python CLEAN/app/build.py install
 
-# CMD ["./runpipeline.sh"]
-CMD ["tail", "-f", "/dev/null"]
+# CMD ["tail", "-f", "/dev/null"]
+CMD ["./runpipeline.sh"]
