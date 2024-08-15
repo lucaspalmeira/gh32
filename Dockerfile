@@ -10,5 +10,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install kaleido
 
+RUN python CLEAN/app/build.py install
+
 # CMD ["./runpipeline.sh"]
 CMD ["tail", "-f", "/dev/null"]
