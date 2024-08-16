@@ -10,10 +10,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install kaleido
 
-WORKDIR /gh32/CLEAN/app/
-
-RUN python build.py install
-
-WORKDIR /gh32
-# CMD ["tail", "-f", "/dev/null"]
 CMD ["./runpipeline.sh"]
