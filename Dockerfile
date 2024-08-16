@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 WORKDIR /gh32/app
 
-COPY . .
+COPY app/ .
 
 RUN apt-get update && apt-get install openssl
 RUN rm -rf /var/lib/apt/lists/*
