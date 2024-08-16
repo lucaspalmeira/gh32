@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-WORKDIR /gh32
+WORKDIR /gh32/app
 
 COPY . .
 
