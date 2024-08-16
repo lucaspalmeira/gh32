@@ -77,7 +77,7 @@ def process(file):
 
 def main():
 
-    path_maxsep = os.getcwd() + '/CLEAN/app/results/inputs/gh32_maxsep.csv'
+    path_maxsep = '/gh32/clean_results/gh32_maxsep.csv'
     data_ec, enzyme_count = process(path_maxsep)
 
     df = pd.DataFrame(data_ec)
