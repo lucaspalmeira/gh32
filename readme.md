@@ -5,80 +5,46 @@
     <img src="https://github.com/lucaspalmeira/gh32/blob/master/gh32_project.png" alt="drawing"  width="800"/>
 </p>
 
-#### Preparando o ambiente
+#### Clone o repositório:
 
-Clone o repositório:
 ```bash
 git clone https://github.com/lucaspalmeira/gh32.git
 ```
 
-Crie o ambiente:
+#### Construa a imagem gh32-pipeline
+
 ```bash
-conda env create -f environment.yml
-conda activate GH32
+cd /gh32
+docker build -t gh32-pipeline .
 ```
 
-Clone o repositório:
+#### Faça o pull da imagem do CLEAN
+
 ```bash
-git clone https://github.com/tttianhao/CLEAN.git
+docker pull moleculemaker/clean-image-amd64
 ```
 
-Navegue até o diretório '**CLEAN/app/**':
+#### Faça o pull da imagem do MongoDB
+
 ```bash
-cd CLEAN/app/
+docker pull mongo:latest
 ```
 
-Clone o repositório ESM e crie o diretório '**data/esm_data**':
+#### Crie uma rede Docker
+
 ```bash
-git clone https://github.com/facebookresearch/esm.git
-mkdir data/esm_data
+docker network create gh32-network
 ```
 
-Crie o repositório '**data/pretrained**':
+#### Execute o conteiner mongodb
+
 ```bash
-mkdir data/pretrained
+docker run -d --name mongodb --network gh32-network -p 27017:27017 mongo
 ```
 
-<p>Faça o Download dos arquivos pré-treinados conforme as instruções de instalação do <a href="https://github.com/tttianhao/CLEAN?tab=readme-ov-file#1-install">CLEAN</a>.</p>
+#### Execute o pipeline
 
-Os arquivos pré-treinados deverão estar em '**data/pretrained**'
-
-Compile o CLEAN (certifique-se de estar em '**CLEAN/app**'):
 ```bash
-python build.py install
-```
-
-### Instruções para instalar o MongoDB
-<p>Para instalar o MongoDB, siga o tutorial de instalação presente na documentação <a href="https://www.mongodb.com/pt-br/docs/manual/installation/">aqui</a>.</p>
-
-Inicie o MongoDB:
-```bash
-sudo systemctl start mongod
-```
-
-### Run
-```bash
-bash rungh32.sh
-```
-ou
-```bash
-chmod +x rungh32.sh
-./rungh32.sh
-```
-
-### Backup do banco
-
-Para realizar o backup do banco GH32, execute:
-```bash
-mongodump --db gh32 --out /gh32/backup/
-```
-
-Para restaurar o banco de dados, execute:
-```bash
-mongorestore --db gh32 /gh32/backup/
-```
-
-Desative a variável de ambiente:
-```bash
-conda deactivate
+chmod +x runpipeline.sh
+./runpipeline
 ```
