@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - gh32-network
+
+  create-db:
+    image: gh32-pipeline
+    command: python /gh32/app/create_db.py
+    volumes:
+      - .:/gh32
+    networks:
+      - gh32-network
+    depends_on:
+      - mongo
+
+  clean-data:
+    image: moleculemaker/clean-image-amd64
+    command: >
+      /bin/bash -c "echo Starting Execution && python /app/data/inputs/CLEAN_infer_fasta.py --fasta_data gh32"
+    volumes:
+      - ./app:/app/data/inputs
+      - ./app/results/inputs:/app/results/inputs
+    depends_on:
+      - create-db
+
+  ec-clean:
+    image: gh32-pipeline
+    command: python /gh32/app/ec_clean.py
+    volumes:
+      - ./app/results/inputs:/results/inputs
+      - .:/gh32
+    networks:
+      - gh32-network
+    depends_on:
+      - clean-data
+
+networks:
+  gh32-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+
