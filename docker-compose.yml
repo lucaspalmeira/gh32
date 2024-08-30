@@ -26,8 +26,6 @@ services:
     volumes:
       - ./app:/app/data/inputs
       - ./app/results/inputs:/app/results/inputs
-    depends_on:
-      - create-db
 
   ec-clean:
     image: gh32-pipeline
@@ -37,8 +35,6 @@ services:
       - .:/gh32
     networks:
       - gh32-network
-    depends_on:
-      - clean-data
 
 networks:
   gh32-network:
