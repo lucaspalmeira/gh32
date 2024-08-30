@@ -11,7 +11,7 @@ services:
 
   create-db:
     image: gh32-pipeline
-    command: python /gh32/app/create_db.py
+    command: python /gh32/pipeline/create_db.py
     volumes:
       - .:/gh32
     networks:
@@ -24,14 +24,14 @@ services:
     command: >
       /bin/bash -c "echo Starting Execution && python /app/data/inputs/CLEAN_infer_fasta.py --fasta_data gh32"
     volumes:
-      - ./app:/app/data/inputs
-      - ./app/results/inputs:/app/results/inputs
+      - ./pipeline:/app/data/inputs
+      - ./pipeline/results/inputs:/app/results/inputs
 
   ec-clean:
     image: gh32-pipeline
-    command: python /gh32/app/ec_clean.py
+    command: python /gh32/pipeline/ec_clean.py
     volumes:
-      - ./app/results/inputs:/results/inputs
+      - ./pipeline/results/inputs:/results/inputs
       - .:/gh32
     networks:
       - gh32-network
