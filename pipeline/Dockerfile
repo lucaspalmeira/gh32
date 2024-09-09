@@ -1,8 +1,8 @@
 FROM python:3.9-slim
 
-WORKDIR /gh32/pipeline
+WORKDIR pipeline/
 
-COPY pipeline/ .
+COPY . .
 
 RUN apt-get update && apt-get install openssl
 RUN rm -rf /var/lib/apt/lists/*
