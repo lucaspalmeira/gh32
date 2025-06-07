@@ -7,8 +7,6 @@
 
 
 import pymongo
-from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
 
 client = pymongo.MongoClient('mongodb://172.17.0.2:27017/')
 
